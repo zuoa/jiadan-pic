@@ -1,0 +1,30 @@
+{
+  "private": true,
+  "author": "yujian <yujian@airimos.com>",
+  "name": "jiadan-pic",
+  "version": "1.0.0",
+  "description": "Personal Photo Gallery with Admin Panel",
+  "scripts": {
+    "dev": "umi dev",
+    "build": "umi build",
+    "postinstall": "umi setup",
+    "setup": "umi setup",
+    "start": "npm run dev"
+  },
+  "dependencies": {
+    "umi": "^4.4.11",
+    "antd": "^5.0.0",
+    "@ant-design/icons": "^5.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "dayjs": "^1.11.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.33",
+    "@types/react-dom": "^18.0.11",
+    "typescript": "^5.0.3"
+  },
+  "main": "index.js",
+  "keywords": [],
+  "license": "ISC"
+}

@@ -1,0 +1,325 @@
+// Global overrides for Ant Design Menu component
+.ant-menu-horizontal {
+  background: transparent !important;
+  border-bottom: none !important;
+  line-height: inherit !important;
+
+  &.ant-menu-root {
+    background: transparent !important;
+    border: none !important;
+  }
+
+  .ant-menu-item {
+    background: transparent !important;
+    border-radius: 6px !important;
+    margin: 0 8px !important;
+
+    &::after {
+      display: none !important;
+    }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    &.ant-menu-item-selected {
+      background: rgba(255, 255, 255, 0.15) !important;
+      
+      &::after {
+        display: none !important;
+      }
+    }
+
+    a {
+      color: #ffffff !important;
+      text-decoration: none !important;
+
+      &:hover {
+        color: #ffffff !important;
+      }
+    }
+  }
+}
+
+.basic-layout {
+  min-height: 100vh;
+  background: #ffffff;
+
+  .header {
+    padding: 0;
+    background: linear-gradient(135deg, #1a1a1a 0%, #000000 50%, #1a1a1a 100%);
+    border-bottom: none;
+    position: relative;
+    z-index: 1000;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(10px);
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, 
+        rgba(255, 255, 255, 0.05) 0%, 
+        rgba(255, 255, 255, 0.02) 50%, 
+        rgba(255, 255, 255, 0.05) 100%);
+      pointer-events: none;
+    }
+
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      height: 80px;
+      position: relative;
+      z-index: 1;
+
+      .brand-section {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+
+        .logo-container {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+
+          .logo-icon {
+            color: #ffffff;
+            font-size: 1.5rem;
+            opacity: 0.9;
+          }
+
+          .logo {
+            color: #ffffff !important;
+            margin: 0;
+            font-weight: 600;
+            font-size: 1.75rem;
+            letter-spacing: 1px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+
+            &:hover {
+              color: #ffffff !important;
+            }
+          }
+        }
+
+        .brand-tagline {
+          color: rgba(255, 255, 255, 0.7);
+          font-size: 0.75rem;
+          font-weight: 400;
+          letter-spacing: 1px;
+          text-transform: uppercase;
+          margin-left: 44px;
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+      }
+
+      .nav-menu {
+        background: transparent !important;
+        border-bottom: none !important;
+        line-height: 80px;
+        flex: none;
+
+        // Override Ant Design Menu default styles
+        &.ant-menu-horizontal {
+          border-bottom: none !important;
+        }
+
+        // Fix for menu items
+        .ant-menu-item {
+          border-bottom: none !important;
+          transition: all 0.3s ease;
+          margin: 0 8px;
+          border-radius: 6px;
+          background: transparent !important;
+          position: relative;
+
+          // Remove default Ant Design styles
+          &::after {
+            display: none !important;
+          }
+
+          &:last-child {
+            margin-right: 0;
+          }
+
+          a {
+            color: #ffffff !important;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            padding: 10px 16px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-decoration: none;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+            .anticon {
+              font-size: 16px;
+            }
+
+            &:hover {
+              color: #ffffff !important;
+            }
+          }
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+
+            a {
+              color: #ffffff !important;
+            }
+          }
+
+          &.ant-menu-item-selected {
+            background: rgba(255, 255, 255, 0.15) !important;
+            color: #ffffff !important;
+
+            a {
+              color: #ffffff !important;
+            }
+
+            &::after {
+              display: none !important;
+            }
+          }
+
+          // Force override any Ant Design hover states
+          &.ant-menu-item-active {
+            background: rgba(255, 255, 255, 0.1) !important;
+            color: #ffffff !important;
+
+            a {
+              color: #ffffff !important;
+            }
+          }
+        }
+
+        // Ensure proper display for menu root
+        &.ant-menu-root {
+          background: transparent !important;
+          border: none !important;
+        }
+      }
+    }
+  }
+
+  .content {
+    padding: 0;
+    background: #ffffff;
+    min-height: calc(100vh - 80px);
+  }
+}
+
+@media (max-width: 768px) {
+  .basic-layout {
+    .header {
+      .header-content {
+        padding: 16px;
+        flex-direction: column;
+        height: auto;
+        gap: 16px;
+
+        .brand-section {
+          text-align: center;
+
+          .logo-container {
+            justify-content: center;
+
+            .logo {
+              font-size: 1.5rem;
+            }
+          }
+
+          .brand-tagline {
+            margin-left: 0;
+            text-align: center;
+          }
+        }
+
+        .nav-menu {
+          line-height: 60px;
+          width: 100%;
+          display: flex;
+          justify-content: center;
+
+          .ant-menu-item {
+            text-align: center;
+            margin: 0 8px;
+            flex: 1;
+            max-width: 150px;
+
+            a {
+              justify-content: center;
+              font-size: 13px;
+              padding: 8px 12px;
+            }
+          }
+        }
+      }
+    }
+
+    .content {
+      min-height: calc(100vh - 140px);
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .basic-layout {
+    .header {
+      .header-content {
+        padding: 12px;
+
+        .brand-section {
+          .logo-container {
+            .logo {
+              font-size: 1.25rem;
+              letter-spacing: 1px;
+            }
+
+            .logo-icon {
+              font-size: 1.25rem;
+            }
+          }
+
+          .brand-tagline {
+            font-size: 0.7rem;
+          }
+        }
+
+        .nav-menu {
+          line-height: 50px;
+
+          .ant-menu-item {
+            margin: 0 4px;
+
+            a {
+              font-size: 12px;
+              gap: 6px;
+              padding: 6px 10px;
+
+              .anticon {
+                font-size: 14px;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+} 

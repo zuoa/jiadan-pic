@@ -1,0 +1,440 @@
+.admin-container {
+  padding: 48px 32px;
+  min-height: calc(100vh - 80px);
+  background: #ffffff;
+  max-width: 1400px;
+  margin: 0 auto;
+
+  .admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    padding: 0 0 24px 0;
+    border-bottom: 2px solid #f5f5f5;
+
+    .admin-title {
+      flex: 1;
+
+      h1 {
+        color: #000000;
+        font-weight: 700;
+        font-size: 2rem;
+        margin: 0 0 4px 0;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+
+      p {
+        color: #666666;
+        font-size: 1rem;
+        margin: 0;
+        font-weight: 400;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+    }
+
+    .admin-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+
+      .ant-btn-primary {
+        height: 42px;
+        padding: 0 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 15px;
+        background: #000000;
+        border-color: #000000;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+        &:hover,
+        &:focus {
+          background: #333333;
+          border-color: #333333;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .anticon {
+          margin-right: 8px;
+        }
+      }
+
+      .ant-btn[ant-click-animating-without-extra-node]:after {
+        display: none;
+      }
+
+      .ant-dropdown-trigger {
+        height: 42px;
+        padding: 0 16px;
+        border-radius: 8px;
+        color: #000000;
+        font-weight: 500;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+        &:hover,
+        &:focus {
+          background: #f5f5f5;
+          color: #000000;
+        }
+
+        .anticon {
+          margin-right: 8px;
+        }
+      }
+    }
+  }
+
+  .admin-stats {
+    margin-bottom: 40px;
+
+    .ant-card {
+      border: 1px solid #f0f0f0;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      background: #ffffff;
+
+      &:hover {
+        border-color: #e0e0e0;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+        transform: translateY(-2px);
+      }
+
+      .ant-card-body {
+        padding: 24px;
+      }
+
+      .ant-statistic {
+        .ant-statistic-title {
+          color: #666666;
+          font-size: 14px;
+          font-weight: 500;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          margin-bottom: 8px;
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        .ant-statistic-content {
+          color: #000000;
+          font-weight: 700;
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+          .ant-statistic-content-value {
+            font-size: 32px;
+          }
+
+          .ant-statistic-content-prefix {
+            color: #000000;
+            margin-right: 8px;
+            font-size: 24px;
+          }
+
+          .ant-statistic-content-suffix {
+            color: #666666;
+            font-size: 16px;
+            margin-left: 6px;
+            font-weight: 500;
+          }
+        }
+      }
+    }
+  }
+
+  .admin-table {
+    border: 1px solid #f0f0f0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+    .ant-card-body {
+      padding: 0;
+    }
+
+    .ant-table {
+      .ant-table-thead > tr > th {
+        background: #fafafa;
+        border-bottom: 2px solid #f0f0f0;
+        font-weight: 600;
+        color: #000000;
+        font-size: 14px;
+        padding: 16px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+
+      .ant-table-tbody > tr > td {
+        border-bottom: 1px solid #f8f8f8;
+        vertical-align: middle;
+        font-size: 14px;
+        padding: 16px;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+        .ant-btn-link {
+          font-weight: 500;
+          padding: 0;
+          height: auto;
+          font-size: 13px;
+
+          &:hover {
+            color: #000000;
+          }
+
+          &.ant-btn-dangerous:hover {
+            color: #ff4d4f;
+          }
+        }
+      }
+
+      .ant-table-tbody > tr:hover > td {
+        background: #fafafa;
+      }
+    }
+
+    .ant-pagination {
+      margin: 24px;
+      text-align: right;
+
+      .ant-pagination-total-text {
+        color: #666666;
+        font-size: 14px;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+    }
+  }
+}
+
+// Modal customization
+.ant-modal {
+  .ant-modal-content {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  }
+
+  .ant-modal-header {
+    background: #000000;
+    border-bottom: none;
+    padding: 24px 32px;
+
+    .ant-modal-title {
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 18px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+  }
+
+  .ant-modal-close {
+    top: 24px;
+    right: 24px;
+
+    .ant-modal-close-x {
+      color: #ffffff;
+      font-size: 20px;
+      width: 32px;
+      height: 32px;
+      line-height: 32px;
+
+      &:hover {
+        color: #cccccc;
+      }
+    }
+  }
+
+  .ant-modal-body {
+    padding: 32px;
+  }
+
+  .ant-modal-footer {
+    padding: 24px 32px;
+    border-top: 1px solid #f0f0f0;
+    text-align: right;
+
+    .ant-btn {
+      height: 40px;
+      padding: 0 20px;
+      border-radius: 6px;
+      font-weight: 500;
+      font-size: 14px;
+      margin-left: 12px;
+
+      &.ant-btn-primary {
+        background: #000000;
+        border-color: #000000;
+
+        &:hover,
+        &:focus {
+          background: #333333;
+          border-color: #333333;
+        }
+      }
+    }
+  }
+
+  .ant-form {
+    .ant-form-item-label > label {
+      color: #000000;
+      font-weight: 600;
+      font-size: 14px;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .ant-input,
+    .ant-input-number,
+    .ant-picker {
+      border-radius: 8px;
+      border: 2px solid #e0e0e0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      padding: 12px 16px;
+      font-size: 14px;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+      &:hover {
+        border-color: #000000;
+      }
+
+      &:focus,
+      &.ant-picker-focused {
+        border-color: #000000;
+        box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.08);
+      }
+    }
+
+    .ant-upload {
+      .ant-upload-list {
+        .ant-upload-list-item {
+          border-radius: 8px;
+          border: 2px solid #e0e0e0;
+        }
+      }
+
+      .ant-btn {
+        border-radius: 8px;
+        border: 2px dashed #e0e0e0;
+        color: #666666;
+        height: 40px;
+        padding: 0 16px;
+        font-weight: 500;
+
+        &:hover {
+          border-color: #000000;
+          color: #000000;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 1200px) {
+  .admin-container {
+    padding: 32px 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-container {
+    padding: 24px 16px;
+
+    .admin-header {
+      flex-direction: column;
+      gap: 20px;
+      text-align: center;
+      margin-bottom: 32px;
+      padding-bottom: 20px;
+
+      .admin-title {
+        h1 {
+          font-size: 1.5rem;
+        }
+
+        p {
+          font-size: 0.9rem;
+        }
+      }
+
+      .ant-btn-primary {
+        width: 100%;
+        height: 48px;
+        align-self: center;
+        max-width: 200px;
+      }
+    }
+
+    .admin-stats {
+      margin-bottom: 32px;
+
+      .ant-col {
+        margin-bottom: 16px;
+      }
+
+      .ant-card {
+        .ant-card-body {
+          padding: 20px;
+        }
+
+        .ant-statistic {
+          .ant-statistic-content {
+            .ant-statistic-content-value {
+              font-size: 24px;
+            }
+          }
+        }
+      }
+    }
+
+    .admin-table {
+      .ant-table {
+        font-size: 13px;
+
+        .ant-table-thead > tr > th,
+        .ant-table-tbody > tr > td {
+          padding: 12px 8px;
+        }
+      }
+
+      .ant-pagination {
+        margin: 16px;
+      }
+    }
+  }
+
+  .ant-modal {
+    margin: 16px;
+    max-width: none !important;
+    width: calc(100vw - 32px) !important;
+
+    .ant-modal-header,
+    .ant-modal-body,
+    .ant-modal-footer {
+      padding: 20px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-container {
+    padding: 16px 12px;
+
+    .admin-header {
+      .admin-title {
+        h1 {
+          font-size: 1.25rem;
+        }
+
+        p {
+          font-size: 0.85rem;
+        }
+      }
+    }
+  }
+} 
