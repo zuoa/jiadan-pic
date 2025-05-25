@@ -1,31 +1,81 @@
-# 佳丹照片集 - 个人照片图库应用
+# 个人照片图库 (jiadan-pic)
 
-一个基于 React + UmiJS + Ant Design 构建的优雅个人照片图库应用，包含展示页面和后台管理功能。
+一个基于 Umi 4 和 Ant Design 的个人照片图库应用，支持照片上传、管理和展示。
 
-## ✨ 特性
+## 项目特性
 
-- 🎨 **简洁优雅的设计** - 现代化的UI设计，响应式布局
-- 📱 **移动端适配** - 完美支持手机和平板设备
-- 🖼️ **照片展示** - 瀑布流布局，支持预览和放大
-- ⚙️ **后台管理** - 完整的CRUD操作，支持照片上传和编辑
-- 📊 **数据统计** - 照片数量、存储大小等统计信息
-- 🎭 **动画效果** - 流畅的过渡动画和交互效果
+- 🖼️ 照片上传和管理
+- 📱 响应式设计
+- 🔐 管理员认证
+- 🎨 现代化 UI 设计
+- 🚀 基于 Umi 4 + Ant Design 5
 
-## 🛠️ 技术栈
+## 技术栈
 
-- **前端框架**: React 18
-- **路由管理**: UmiJS 4
-- **UI组件库**: Ant Design 5
-- **样式预处理**: Less
-- **日期处理**: Day.js
-- **开发语言**: TypeScript
+- **前端框架**: Umi 4 + React 18
+- **UI 组件**: Ant Design 5
+- **API 生成**: @umijs/max-plugin-openapi
+- **样式**: Less
+- **类型检查**: TypeScript
 
-## 📦 安装和运行
+## API 集成
 
-### 环境要求
+项目使用 `@umijs/max-plugin-openapi` 插件自动生成 API 接口代码：
 
-- Node.js >= 16.0.0
-- npm >= 8.0.0
+### 安装和配置
+
+1. **安装 OpenAPI 插件**：
+   ```bash
+   npm install --save-dev @umijs/max-plugin-openapi
+   ```
+
+2. **配置 .umirc.ts**：
+   ```typescript
+   import { defineConfig } from "@umijs/max";
+
+   export default defineConfig({
+     // 启用插件
+     plugins: ['@umijs/max-plugin-openapi'],
+     
+     // OpenAPI配置
+     openAPI: {
+       requestLibPath: "import { request } from '@umijs/max'",
+       schemaPath: './api-spec.json',
+       projectName: 'jiadan-pic-api',
+       apiPrefix: '/api',
+       namespace: 'API',
+       mock: false,
+       hook: {
+         customFunctionName: () => {
+           return 'customApiFunction';
+         },
+       },
+     },
+   });
+   ```
+
+3. **API 规范文件**：项目根目录的 `api-spec.json` 文件包含完整的 API 规范
+
+### 使用生成的 API
+
+OpenAPI 插件会在开发时自动生成 API 接口代码：
+
+```typescript
+// 生成的API会在 src/.umi/plugin-openapi/ 目录中
+// 使用示例（待插件完全生成后）：
+import { request } from '@umijs/max';
+
+// 登录接口
+const loginResult = await request('/api/auth/login', {
+  method: 'POST',
+  data: {
+    username: 'admin',
+    password: 'password'
+  }
+});
+```
+
+## 开发指南
 
 ### 安装依赖
 
@@ -39,107 +89,79 @@ npm install
 npm run dev
 ```
 
-访问 http://localhost:8000 查看应用
-
 ### 构建生产版本
 
 ```bash
 npm run build
 ```
 
-## 📁 项目结构
+### 代码格式化
 
-```
-jiadan-pic/
-├── src/
-│   ├── layouts/           # 布局组件
-│   │   ├── index.tsx     # 主布局
-│   │   └── index.less    # 布局样式
-│   ├── pages/            # 页面组件
-│   │   ├── Gallery/      # 照片展示页
-│   │   │   ├── index.tsx
-│   │   │   └── index.less
-│   │   └── Admin/        # 后台管理页
-│   │       ├── index.tsx
-│   │       └── index.less
-│   ├── components/       # 公共组件
-│   ├── utils/           # 工具函数
-│   └── assets/          # 静态资源
-├── .umirc.ts            # UmiJS 配置
-├── package.json         # 项目配置
-└── README.md           # 项目说明
+```bash
+npm run format
 ```
 
-## 🎯 功能介绍
+## 项目结构
 
-### 照片展示页面 (/)
-
-- **瀑布流布局**: 自适应的网格布局展示照片
-- **悬停效果**: 鼠标悬停显示预览按钮
-- **模态预览**: 点击可在弹窗中查看大图
-- **响应式设计**: 支持各种屏幕尺寸
-
-### 后台管理页面 (/admin)
-
-- **数据统计**: 显示总照片数、存储大小、本月新增等
-- **照片列表**: 表格形式展示所有照片信息
-- **添加照片**: 支持上传新照片并填写相关信息
-- **编辑照片**: 修改照片标题、描述等信息
-- **删除照片**: 安全删除不需要的照片
-- **搜索排序**: 支持按日期排序和分页显示
-
-## 🎨 设计特色
-
-### 视觉设计
-- **渐变背景**: 使用优雅的渐变色彩
-- **毛玻璃效果**: backdrop-filter 实现的现代化效果
-- **阴影层次**: 多层次的阴影营造立体感
-- **圆角设计**: 统一的圆角风格
-
-### 交互体验
-- **流畅动画**: CSS3 transition 实现的平滑过渡
-- **悬停反馈**: 丰富的鼠标悬停效果
-- **加载状态**: 优雅的加载动画
-- **错误处理**: 友好的错误提示
-
-## 📱 响应式设计
-
-应用采用移动优先的响应式设计：
-
-- **桌面端** (>768px): 完整功能展示
-- **平板端** (768px): 适配中等屏幕
-- **手机端** (<768px): 优化移动体验
-
-## 🔧 自定义配置
-
-### 修改主题色彩
-
-在各个 `.less` 文件中修改 CSS 变量：
-
-```less
-// 主色调
-#667eea -> 你的主色
-#764ba2 -> 你的辅色
-
-// 文字颜色
-#2c3e50 -> 你的主文字色
-#7f8c8d -> 你的辅文字色
+```
+src/
+├── pages/           # 页面组件
+│   ├── index.tsx    # 首页
+│   ├── Gallery/     # 图库页面
+│   └── Admin/       # 管理页面
+├── components/      # 公共组件
+├── services/        # API 服务（简化后）
+├── types/          # 类型定义
+├── utils/          # 工具函数
+├── hooks/          # 自定义 Hooks
+├── styles/         # 全局样式
+└── assets/         # 静态资源
 ```
 
-### 添加新功能
+## 环境配置
 
-1. 在 `src/pages/` 下创建新页面
-2. 在 `.umirc.ts` 中添加路由配置
-3. 在布局中添加导航菜单
+### 开发环境
 
-## 📄 许可证
+- 前端端口：8000
+- 后端 API：http://localhost:9000
+- 代理配置已在 `.umirc.ts` 中设置
 
-ISC License
+### 生产环境
 
-## 🤝 贡献
+需要配置正确的 API 基础路径和静态资源路径。
 
-欢迎提交 Issue 和 Pull Request！
+## 清理和重构记录
 
----
+### ✅ 已完成的清理工作
 
-**享受你的照片分享之旅！** 📸✨ 
+**删除的无关文件：**
+- 文档文件：`OPENAPI_INTEGRATION.md`, `GALLERY_API_INTEGRATION.md`, `backend-api-design.md`, `DEBUG_GUIDE.md`, `PROXY_CONFIG.md`, `API_INTEGRATION.md`, `LOGIN_CREDENTIALS.md`
+- 测试文件：`test-api.html`, `api-spec.example.json`
+- 旧配置：`openapi.config.js`
+- 示例代码：`src/examples/` 目录
+- 调试页面：`src/pages/ApiTest/`, `src/pages/Gallery/debug.tsx`, `src/pages/docs.tsx`
+- 旧API代码：`src/services/generatedApi.ts`, `src/services/api.ts`, `src/generated/` 目录
+- 脚本文件：`scripts/` 目录及其所有内容
+
+**配置更新：**
+- ✅ 安装并配置了 `@umijs/max-plugin-openapi`
+- ✅ 更新了 `.umirc.ts` 使用正确的 OpenAPI 配置
+- ✅ 简化了 `package.json` 脚本
+- ✅ 更新了代码文件以移除对已删除 API 的引用
+- ✅ 修复了所有构建错误
+
+### 🔄 待完成的工作
+
+1. **API 生成**：启动开发服务器后，OpenAPI 插件会根据 `api-spec.json` 自动生成 API 客户端代码
+2. **API 集成**：将生成的 API 代码集成到现有的工具类中（`src/utils/auth.ts`, `src/utils/apiTest.ts`）
+3. **页面更新**：更新 Gallery 和 Admin 页面以使用生成的 API
+
+### 📝 使用说明
+
+1. **启动开发服务器**：`npm run dev`
+2. **查看 OpenAPI 文档**：访问开发服务器后，OpenAPI 插件会提供 Swagger UI 界面
+3. **使用生成的 API**：在 `src/.umi/plugin-openapi/` 目录中查看生成的 API 代码
+
+## 许可证
+
+ISC 

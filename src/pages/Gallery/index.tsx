@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Image, Modal, Empty, Typography, Button, Input, message } from 'antd';
 import { FullscreenOutlined, SettingOutlined, LockOutlined, UnlockOutlined } from '@ant-design/icons';
 import { Link } from 'umi';
-import { API } from '@/services';
+// 注释掉旧的API导入，等待OpenAPI生成新的API
+// import { API } from '@/services';
 import { Photo } from '@/types/api';
 import './index.less';
 import '../../styles/layout.less';
@@ -40,42 +41,15 @@ const Gallery: React.FC = () => {
       console.log('📊 当前认证状态:', isAuthenticated);
       
       try {
-        // 根据认证状态决定调用哪个API
-        let response;
-        if (isAuthenticated) {
-          // 已认证用户可以看到所有照片（包括私有照片）
-          console.log('🔐 使用认证API获取所有照片');
-          response = await API.Photo.getPhotoList({
-            per_page: 100, // 获取足够多的照片
-            page: 1
-          });
-        } else {
-          // 未认证用户只能看到公开照片
-          console.log('🌐 使用公开API获取公开照片');
-          response = await API.Public.getPublicPhotoList({
-            per_page: 100,
-            page: 1
-          });
-        }
-
-        console.log('📨 API响应:', response);
-
-        if (response.success && response.data) {
-          console.log('✅ 成功获取照片数据:', response.data.photos.length, '张照片');
-          setPhotos(response.data.photos);
-        } else {
-          console.error('❌ API响应格式异常:', response);
-          message.error('获取照片失败：' + (response.message || '未知错误'));
-        }
+        // TODO: 使用OpenAPI生成的API
+        console.log('📨 API将在OpenAPI生成后可用');
+        
+        // 临时设置空数组，等待API生成
+        setPhotos([]);
+        message.info('照片API将在OpenAPI生成后可用');
       } catch (error) {
         console.error('❌ API调用失败:', error);
-        console.error('错误详情:', {
-          name: (error as any).name,
-          message: (error as any).message,
-          stack: (error as any).stack
-        });
         message.error('获取照片失败，请检查网络连接');
-        // 如果API调用失败，可以选择显示一些默认照片或空状态
         setPhotos([]);
       } finally {
         setLoading(false);

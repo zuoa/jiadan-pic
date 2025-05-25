@@ -1,4 +1,5 @@
-import { API } from '@/services/api';
+// 注释掉旧的API导入，等待OpenAPI生成新的API
+// import { API } from '@/services/api';
 import { AdminAuth } from './auth';
 
 /**
@@ -10,10 +11,10 @@ export class ApiTester {
    */
   static async testConnection(): Promise<boolean> {
     try {
-      // 尝试获取公开照片列表（不需要认证）
-      const response = await API.Public.getPublicPhotoList({ per_page: 1, page: 1 });
-      console.log('API连接测试成功:', response);
-      return true;
+      // TODO: 使用OpenAPI生成的API
+      // const response = await API.Public.getPublicPhotoList({ per_page: 1, page: 1 });
+      console.log('API连接测试将在OpenAPI生成后可用');
+      return false;
     } catch (error) {
       console.error('API连接测试失败:', error);
       return false;
@@ -53,15 +54,12 @@ export class ApiTester {
         return false;
       }
 
-      // 测试获取照片列表
-      const response = await API.Photo.getPhotoList({ per_page: 5, page: 1 });
-      console.log('照片列表API测试成功:', response);
+      // TODO: 使用OpenAPI生成的API
+      // const response = await API.Photo.getPhotoList({ per_page: 5, page: 1 });
+      // const stats = await API.Dashboard.getStats();
+      console.log('照片API测试将在OpenAPI生成后可用');
 
-      // 测试仪表板统计
-      const stats = await API.Dashboard.getStats();
-      console.log('仪表板API测试成功:', stats);
-
-      return true;
+      return false;
     } catch (error) {
       console.error('照片API测试失败:', error);
       return false;
@@ -79,7 +77,7 @@ export class ApiTester {
     const connectionOk = await this.testConnection();
     
     if (!connectionOk) {
-      console.log('❌ API连接失败，请检查后端服务是否启动');
+      console.log('❌ API连接失败，OpenAPI生成后将可用');
       return;
     }
     console.log('✅ API连接正常');

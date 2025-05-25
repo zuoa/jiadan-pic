@@ -1,4 +1,5 @@
-import { API } from '@/services/api';
+// 注释掉旧的API导入，等待OpenAPI生成新的API
+// import { API } from '@/services/api';
 import { LoginRequest, User } from '@/types/api';
 import { ApiError } from './request';
 
@@ -13,15 +14,11 @@ export class AdminAuth {
   static async login(username: string, password: string): Promise<boolean> {
     try {
       const credentials: LoginRequest = { username, password };
-      const response = await API.Auth.login(credentials);
+      // TODO: 使用OpenAPI生成的API
+      // const response = await API.Auth.login(credentials);
+      console.log('Login API will be available after OpenAPI generation');
       
-      if (response.success && response.data) {
-        // 保存token和用户信息
-        localStorage.setItem(this.STORAGE_KEY, response.data.token);
-        localStorage.setItem(this.USER_KEY, JSON.stringify(response.data.user));
-        return true;
-      }
-      
+      // 临时返回false，等待API生成
       return false;
     } catch (error) {
       console.error('Login failed:', error);
@@ -34,8 +31,9 @@ export class AdminAuth {
    */
   static async logout(): Promise<void> {
     try {
-      // 调用后端登出接口
-      await API.Auth.logout();
+      // TODO: 使用OpenAPI生成的API
+      // await API.Auth.logout();
+      console.log('Logout API will be available after OpenAPI generation');
     } catch (error) {
       console.error('Logout API call failed:', error);
       // 即使API调用失败，也要清除本地存储
@@ -91,8 +89,10 @@ export class AdminAuth {
     if (!token) return false;
 
     try {
-      const response = await API.Auth.verifyToken();
-      return response.success;
+      // TODO: 使用OpenAPI生成的API
+      // const response = await API.Auth.verifyToken();
+      console.log('Token validation API will be available after OpenAPI generation');
+      return false;
     } catch (error) {
       console.error('Token validation failed:', error);
       

@@ -1,17 +1,36 @@
-import { defineConfig } from "umi";
+import { defineConfig } from "@umijs/max";
+import { join } from 'path';
 
 export default defineConfig({
   routes: [
     { path: '/', component: '@/pages/index' },
     { path: '/gallery', component: '@/pages/Gallery/index' },
-    { path: '/gallery-debug', component: '@/pages/Gallery/debug' },
     { path: '/admin', component: '@/pages/Admin/index' },
-    { path: '/api-test', component: '@/pages/ApiTest/index' },
   ],
   npmClient: 'npm',
   title: '个人照片图库',
   hash: true,
   publicPath: process.env.NODE_ENV === 'production' ? './' : '/',
+  
+  // 启用插件
+  plugins: ['@umijs/max-plugin-openapi'],
+  
+  // OpenAPI配置
+  openAPI: {
+    requestLibPath: "import { request } from '@umijs/max'",
+    // 使用本地的 API 规范文件
+    schemaPath:'http://localhost:9000/api/swagger.json',
+    projectName: 'jiadan-pic-api',
+    apiPrefix: '/api',
+    namespace: 'API',
+    mock: false,
+    hook: {
+      customFunctionName: () => {
+        return 'customApiFunction';
+      },
+    },
+  },
+  
   // 开发环境代理配置
   proxy: {
     '/api': {
