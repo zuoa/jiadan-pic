@@ -7,24 +7,51 @@
   "scripts": {
     "dev": "umi dev",
     "build": "umi build",
-    "postinstall": "umi setup",
-    "setup": "umi setup",
-    "start": "npm run dev"
+    "format": "prettier --cache --write .",
+    "prepare": "husky install",
+    "start": "npm run dev",
+    "generate-api": "node scripts/generate-api.mjs",
+    "generate-api:watch": "nodemon --watch api-spec.json --exec \"npm run generate-api\"",
+    "api:generate": "npm run generate-api",
+    "api:update": "npm run generate-api",
+    "api:sync": "./scripts/update-api-spec.sh",
+    "api:pull": "./scripts/update-api-spec.sh"
   },
   "dependencies": {
-    "umi": "^4.4.11",
-    "antd": "^5.0.0",
     "@ant-design/icons": "^5.0.0",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "dayjs": "^1.11.0"
+    "antd": "^5.21.4",
+    "axios": "^1.9.0",
+    "dayjs": "^1.11.0",
+    "react": "18.x",
+    "react-dom": "18.x",
+    "umi": "^4.4.11"
   },
   "devDependencies": {
-    "@types/react": "^18.0.33",
-    "@types/react-dom": "^18.0.11",
-    "typescript": "^5.0.3"
+    "@commitlint/cli": "^17.1.2",
+    "@commitlint/config-conventional": "^17.1.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@umijs/lint": "^4.4.11",
+    "husky": "^8.0.1",
+    "lint-staged": "^13.0.3",
+    "prettier": "^2.7.1",
+    "prettier-plugin-organize-imports": "^3.0.0",
+    "prettier-plugin-packagejson": "^2.2.18",
+    "swagger-typescript-api": "^13.0.22",
+    "typescript": "^5.0.0"
   },
   "main": "index.js",
   "keywords": [],
-  "license": "ISC"
+  "license": "ISC",
+  "lint-staged": {
+    "*.{md,json}": [
+      "prettier --cache --write"
+    ],
+    "*.{js,jsx}": [
+      "prettier --cache --write"
+    ],
+    "*.{ts,tsx}": [
+      "prettier --cache --write"
+    ]
+  }
 }

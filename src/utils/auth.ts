@@ -1,46 +1,49 @@
+import { API } from '@/services/api';
+import { LoginRequest, User } from '@/types/api';
+import { ApiError } from './request';
+
 // Admin 认证管理
 export class AdminAuth {
   private static readonly STORAGE_KEY = 'admin-auth-token';
-  private static readonly USERNAME_KEY = 'admin-username';
-  private static readonly ADMIN_CREDENTIALS = {
-    username: 'admin',
-    password: 'jiadan2024admin'
-  };
-
-  /**
-   * 验证管理员登录凭据
-   */
-  static async validateCredentials(username: string, password: string): Promise<boolean> {
-    // 模拟网络请求延迟
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    return username === this.ADMIN_CREDENTIALS.username && 
-           password === this.ADMIN_CREDENTIALS.password;
-  }
+  private static readonly USER_KEY = 'admin-user';
 
   /**
    * 登录并保存认证状态
    */
   static async login(username: string, password: string): Promise<boolean> {
-    const isValid = await this.validateCredentials(username, password);
-    
-    if (isValid) {
-      // 生成简单的token（实际项目中应该使用JWT）
-      const token = btoa(`${username}:${Date.now()}`);
-      localStorage.setItem(this.STORAGE_KEY, token);
-      localStorage.setItem(this.USERNAME_KEY, username);
-      return true;
+    try {
+      const credentials: LoginRequest = { username, password };
+      const response = await API.Auth.login(credentials);
+      
+      if (response.success && response.data) {
+        // 保存token和用户信息
+        localStorage.setItem(this.STORAGE_KEY, response.data.token);
+        localStorage.setItem(this.USER_KEY, JSON.stringify(response.data.user));
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('Login failed:', error);
+      return false;
     }
-    
-    return false;
   }
 
   /**
    * 退出登录
    */
-  static logout(): void {
-    localStorage.removeItem(this.STORAGE_KEY);
-    localStorage.removeItem(this.USERNAME_KEY);
+  static async logout(): Promise<void> {
+    try {
+      // 调用后端登出接口
+      await API.Auth.logout();
+    } catch (error) {
+      console.error('Logout API call failed:', error);
+      // 即使API调用失败，也要清除本地存储
+    } finally {
+      // 清除本地存储
+      localStorage.removeItem(this.STORAGE_KEY);
+      localStorage.removeItem(this.USER_KEY);
+    }
   }
 
   /**
@@ -52,10 +55,25 @@ export class AdminAuth {
   }
 
   /**
+   * 获取当前登录的用户信息
+   */
+  static getCurrentUser(): User | null {
+    const userStr = localStorage.getItem(this.USER_KEY);
+    if (!userStr) return null;
+    
+    try {
+      return JSON.parse(userStr);
+    } catch {
+      return null;
+    }
+  }
+
+  /**
    * 获取当前登录的用户名
    */
-  static getCurrentUser(): string | null {
-    return localStorage.getItem(this.USERNAME_KEY);
+  static getCurrentUsername(): string | null {
+    const user = this.getCurrentUser();
+    return user?.username || null;
   }
 
   /**
@@ -68,16 +86,58 @@ export class AdminAuth {
   /**
    * 验证token是否有效
    */
-  static validateToken(): boolean {
+  static async validateToken(): Promise<boolean> {
     const token = this.getToken();
     if (!token) return false;
 
     try {
-      // 简单的token验证（实际项目中应该验证JWT的签名和过期时间）
-      const decoded = atob(token);
-      return decoded.includes(':');
-    } catch {
+      const response = await API.Auth.verifyToken();
+      return response.success;
+    } catch (error) {
+      console.error('Token validation failed:', error);
+      
+      // 如果token无效，清除本地存储
+      if (error instanceof ApiError && error.status === 401) {
+        this.clearAuth();
+      }
+      
       return false;
     }
+  }
+
+  /**
+   * 清除认证信息
+   */
+  private static clearAuth(): void {
+    localStorage.removeItem(this.STORAGE_KEY);
+    localStorage.removeItem(this.USER_KEY);
+  }
+
+  /**
+   * 获取用户友好的错误信息
+   */
+  static getLoginErrorMessage(error: any): string {
+    if (error instanceof ApiError) {
+      switch (error.code) {
+        case 'INVALID_CREDENTIALS':
+          return '用户名或密码错误';
+        case 'ACCOUNT_LOCKED':
+          return '账户已被锁定';
+        case 'ACCOUNT_DISABLED':
+          return '账户已被禁用';
+        default:
+          return error.message || '登录失败';
+      }
+    }
+    
+    if (error.code === 'NETWORK_ERROR') {
+      return '网络连接失败，请检查网络连接';
+    }
+    
+    if (error.code === 'TIMEOUT') {
+      return '请求超时，请重试';
+    }
+    
+    return '登录失败，请稍后重试';
   }
 } 

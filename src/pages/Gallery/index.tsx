@@ -2,21 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Image, Modal, Empty, Typography, Button, Input, message } from 'antd';
 import { FullscreenOutlined, SettingOutlined, LockOutlined, UnlockOutlined } from '@ant-design/icons';
 import { Link } from 'umi';
+import { API } from '@/services';
+import { Photo } from '@/types/api';
 import './index.less';
 import '../../styles/layout.less';
 
 const { Paragraph } = Typography;
-
-interface Photo {
-  id: string;
-  title: string;
-  description: string;
-  src: string;
-  thumbnail: string;
-  date: string;
-  category: string;
-  isPrivate?: boolean;
-}
 
 const Gallery: React.FC = () => {
   const [photos, setPhotos] = useState<Photo[]>([]);
@@ -41,139 +32,59 @@ const Gallery: React.FC = () => {
     }
   }, []);
 
-  // 图片数据，包含公开和私有图片
+  // 获取照片数据
   useEffect(() => {
-    setTimeout(() => {
-      setPhotos([
-        // 公开图片（前4张）
-        {
-          id: '1',
-          title: 'Mountain Reflection',
-          description: 'A serene mountain landscape reflected in crystal clear waters during golden hour',
-          src: 'https://picsum.photos/800/1200?random=1',
-          thumbnail: 'https://picsum.photos/400/600?random=1',
-          date: '2024-01-15',
-          category: 'landscape',
-          isPrivate: false,
-        },
-        {
-          id: '2',
-          title: 'Urban Nightscape',
-          description: 'City lights painting the night sky with vibrant colors and energy',
-          src: 'https://picsum.photos/800/600?random=2',
-          thumbnail: 'https://picsum.photos/400/300?random=2',
-          date: '2024-02-20',
-          category: 'urban',
-          isPrivate: false,
-        },
-        {
-          id: '3',
-          title: 'Forest Whispers',
-          description: 'Sunlight filtering through ancient trees in a mystical forest',
-          src: 'https://picsum.photos/800/1000?random=3',
-          thumbnail: 'https://picsum.photos/400/500?random=3',
-          date: '2024-03-10',
-          category: 'nature',
-          isPrivate: false,
-        },
-        {
-          id: '4',
-          title: 'Portrait in Light',
-          description: 'Capturing the essence of human emotion through dramatic lighting',
-          src: 'https://picsum.photos/800/1000?random=4',
-          thumbnail: 'https://picsum.photos/400/500?random=4',
-          date: '2024-04-05',
-          category: 'portrait',
-          isPrivate: false,
-        },
-        // 私有图片（需要验证才能查看）
-        {
-          id: '5',
-          title: 'Ocean Dreams',
-          description: 'Waves dancing under the moonlight on a peaceful beach',
-          src: 'https://picsum.photos/800/800?random=5',
-          thumbnail: 'https://picsum.photos/400/400?random=5',
-          date: '2024-05-01',
-          category: 'seascape',
-          isPrivate: true,
-        },
-        {
-          id: '6',
-          title: 'Abstract Geometry',
-          description: 'Modern architecture creating geometric patterns and shadows',
-          src: 'https://picsum.photos/800/600?random=6',
-          thumbnail: 'https://picsum.photos/400/300?random=6',
-          date: '2024-05-15',
-          category: 'abstract',
-          isPrivate: true,
-        },
-        {
-          id: '7',
-          title: 'Wildlife Majesty',
-          description: 'A majestic eagle soaring through mountain peaks',
-          src: 'https://picsum.photos/800/900?random=7',
-          thumbnail: 'https://picsum.photos/400/450?random=7',
-          date: '2024-05-20',
-          category: 'wildlife',
-          isPrivate: true,
-        },
-        {
-          id: '8',
-          title: 'Street Art',
-          description: 'Vibrant street art bringing color to urban walls',
-          src: 'https://picsum.photos/800/1100?random=8',
-          thumbnail: 'https://picsum.photos/400/550?random=8',
-          date: '2024-05-25',
-          category: 'street',
-          isPrivate: true,
-        },
-        {
-          id: '9',
-          title: 'Desert Solitude',
-          description: 'The vast beauty and isolation of desert landscapes',
-          src: 'https://picsum.photos/800/700?random=9',
-          thumbnail: 'https://picsum.photos/400/350?random=9',
-          date: '2024-06-01',
-          category: 'landscape',
-          isPrivate: true,
-        },
-        {
-          id: '10',
-          title: 'Vintage Memories',
-          description: 'A timeless portrait capturing the essence of bygone eras',
-          src: 'https://picsum.photos/800/950?random=10',
-          thumbnail: 'https://picsum.photos/400/475?random=10',
-          date: '2024-06-10',
-          category: 'vintage',
-          isPrivate: true,
-        },
-        {
-          id: '11',
-          title: 'Autumn Symphony',
-          description: 'Golden leaves creating a natural carpet in the forest',
-          src: 'https://picsum.photos/800/1000?random=11',
-          thumbnail: 'https://picsum.photos/400/500?random=11',
-          date: '2024-06-15',
-          category: 'nature',
-          isPrivate: true,
-        },
-        {
-          id: '12',
-          title: 'Cosmic Wonder',
-          description: 'Stars painting stories across the infinite night sky',
-          src: 'https://picsum.photos/800/1200?random=12',
-          thumbnail: 'https://picsum.photos/400/600?random=12',
-          date: '2024-06-20',
-          category: 'astronomy',
-          isPrivate: true,
-        },
-      ]);
-      setLoading(false);
-    }, 1000);
-  }, []);
+    const fetchPhotos = async () => {
+      setLoading(true);
+      console.log('🔍 Gallery页面开始获取照片数据...');
+      console.log('📊 当前认证状态:', isAuthenticated);
+      
+      try {
+        // 根据认证状态决定调用哪个API
+        let response;
+        if (isAuthenticated) {
+          // 已认证用户可以看到所有照片（包括私有照片）
+          console.log('🔐 使用认证API获取所有照片');
+          response = await API.Photo.getPhotoList({
+            per_page: 100, // 获取足够多的照片
+            page: 1
+          });
+        } else {
+          // 未认证用户只能看到公开照片
+          console.log('🌐 使用公开API获取公开照片');
+          response = await API.Public.getPublicPhotoList({
+            per_page: 100,
+            page: 1
+          });
+        }
 
-  // 根据权限过滤图片
-  const displayedPhotos = isAuthenticated ? photos : photos.filter(photo => !photo.isPrivate);
+        console.log('📨 API响应:', response);
+
+        if (response.success && response.data) {
+          console.log('✅ 成功获取照片数据:', response.data.photos.length, '张照片');
+          setPhotos(response.data.photos);
+        } else {
+          console.error('❌ API响应格式异常:', response);
+          message.error('获取照片失败：' + (response.message || '未知错误'));
+        }
+      } catch (error) {
+        console.error('❌ API调用失败:', error);
+        console.error('错误详情:', {
+          name: (error as any).name,
+          message: (error as any).message,
+          stack: (error as any).stack
+        });
+        message.error('获取照片失败，请检查网络连接');
+        // 如果API调用失败，可以选择显示一些默认照片或空状态
+        setPhotos([]);
+      } finally {
+        setLoading(false);
+        console.log('🏁 照片获取流程结束');
+      }
+    };
+
+    fetchPhotos();
+  }, [isAuthenticated]); // 当认证状态改变时重新获取照片
 
   const handlePreview = (photo: Photo) => {
     setPreviewData(photo);
@@ -265,7 +176,7 @@ const Gallery: React.FC = () => {
         </div>
 
         {/* Photo Grid */}
-        {displayedPhotos.length === 0 ? (
+        {photos.length === 0 ? (
           <div className="empty-state">
             <Empty 
               description={
@@ -279,7 +190,7 @@ const Gallery: React.FC = () => {
           </div>
         ) : (
           <div className="gallery-grid">
-            {displayedPhotos.map((photo) => (
+            {photos.map((photo) => (
               <div key={photo.id} className="photo-card-wrapper">
                 <div 
                   className="minimal-photo-card" 
@@ -362,10 +273,12 @@ const Gallery: React.FC = () => {
                       <span className="meta-label">Date:</span>
                       <span className="meta-value">{previewData.date}</span>
                     </div>
-                    <div className="meta-item">
-                      <span className="meta-label">Category:</span>
-                      <span className="meta-value">{previewData.category}</span>
-                    </div>
+                    {previewData.location && (
+                      <div className="meta-item">
+                        <span className="meta-label">Location:</span>
+                        <span className="meta-value">{previewData.location}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

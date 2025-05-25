@@ -41,7 +41,6 @@ import {
   LockOutlined,
   SettingOutlined,
 } from '@ant-design/icons';
-import Header from '../../components/Header';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import { AdminAuth } from '../../utils/auth';
 import type { ColumnsType } from 'antd/es/table';
@@ -347,7 +346,6 @@ const Admin: React.FC = () => {
 
   return (
     <Layout className="basic-layout">
-      <Header className="header" />
       <Content className="content">
         <div className="admin-container">
                 <div className="admin-header">
