@@ -107,25 +107,13 @@ export default function HomePage() {
             <div className="nav-arrow">→</div>
           </div>
 
-          <div 
-            className="nav-item tertiary interactive"
-            onClick={() => navigateTo('/api-test')}
-          >
-            <div className="nav-icon">
-              <ExperimentOutlined />
-            </div>
-            <div className="nav-content">
-              <h3>API Test</h3>
-              <p>Debug & monitor</p>
-            </div>
-            <div className="nav-arrow">→</div>
-          </div>
+      
         </nav>
 
         {/* Footer */}
         <footer className="homepage-footer animate-fade-in">
           <Text className="footer-text">
-            Crafted with precision and care
+            Crafted with love ❤️ 2025
           </Text>
         </footer>
       </div>

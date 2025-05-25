@@ -8,7 +8,7 @@ export default defineConfig({
     { path: '/admin', component: '@/pages/Admin/index' },
   ],
   npmClient: 'npm',
-  title: 'Jiadan Photo Gallery',
+  title: 'Jiadan Visual Stories',
   hash: true,
   publicPath: process.env.NODE_ENV === 'production' ? './' : '/',
   
