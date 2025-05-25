@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Image, Modal, Empty, Typography, Button, Input, message } from 'antd';
 import { FullscreenOutlined, SettingOutlined, LockOutlined, UnlockOutlined } from '@ant-design/icons';
 import { Link } from 'umi';
-// 注释掉旧的API导入，等待OpenAPI生成新的API
-// import { API } from '@/services';
+// 使用修复后的API服务
+import { getPhotos } from '@/services/photos';
 import { Photo } from '@/types/api';
 import './index.less';
 import '../../styles/layout.less';
@@ -41,12 +41,36 @@ const Gallery: React.FC = () => {
       console.log('📊 当前认证状态:', isAuthenticated);
       
       try {
-        // TODO: 使用OpenAPI生成的API
-        console.log('📨 API将在OpenAPI生成后可用');
+        // 使用修复后的API获取照片
+        console.log('📨 调用照片API...');
         
-        // 临时设置空数组，等待API生成
-        setPhotos([]);
-        message.info('照片API将在OpenAPI生成后可用');
+        const response = await getPhotos({
+          per_page: 12,
+          page: 1,
+          // 如果需要搜索功能，可以添加search参数
+        });
+        
+        console.log('📊 API响应:', response);
+        
+        if (response.success && response.data) {
+          const photosData = response.data.photos || [];
+          console.log(`✅ 成功获取 ${photosData.length} 张照片`);
+          
+          // 根据认证状态过滤照片
+          const filteredPhotos = isAuthenticated 
+            ? photosData 
+            : photosData.filter((photo: Photo) => photo.is_public);
+          
+          setPhotos(filteredPhotos);
+          
+          if (filteredPhotos.length === 0) {
+            message.info(isAuthenticated ? '暂无照片' : '暂无公开照片，请验证查看完整相册');
+          }
+        } else {
+          console.warn('⚠️ API返回失败状态:', response);
+          message.warning(response.message || '获取照片失败');
+          setPhotos([]);
+        }
       } catch (error) {
         console.error('❌ API调用失败:', error);
         message.error('获取照片失败，请检查网络连接');
@@ -145,7 +169,7 @@ const Gallery: React.FC = () => {
         <div className="gallery-header">
           <div className="gallery-welcome">
             <h1>Jiadan Visual Stories</h1>
-            <p>Where every frame tells a story and every moment becomes eternal</p>
+            <p>All the beauty in this world is but a reflection of you.</p>
           </div>
         </div>
 

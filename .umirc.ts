@@ -8,7 +8,7 @@ export default defineConfig({
     { path: '/admin', component: '@/pages/Admin/index' },
   ],
   npmClient: 'npm',
-  title: '个人照片图库',
+  title: 'Jiadan Photo Gallery',
   hash: true,
   publicPath: process.env.NODE_ENV === 'production' ? './' : '/',
   
@@ -21,7 +21,7 @@ export default defineConfig({
     // 使用本地的 API 规范文件
     schemaPath:'http://localhost:9000/api/swagger.json',
     projectName: 'jiadan-pic-api',
-    apiPrefix: '/api',
+    apiPrefix: '\'/api\'',
     namespace: 'API',
     mock: false,
     hook: {

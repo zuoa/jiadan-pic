@@ -9,7 +9,7 @@ export async function customApiFunction(
     ,
   options ?: {[key: string]: any}
 ) {
-  return request<API.PhotosResponse>(`${/api}/photos`, {
+  return request<API.PhotosResponse>('/api/photos', {
   method: 'GET',
     params: {
         
@@ -31,7 +31,7 @@ export async function customApiFunction3(
   const { 'photo_id': param0, 
   ...queryParams
   } = params;
-  return request<any>(`${/api}/photos/${param0}`, {
+  return request<any>(`/api/photos/${param0}`, {
   method: 'GET',
     params: {...queryParams,},
     ...(options || {}),
@@ -48,7 +48,7 @@ export async function customApiFunction4(
   const { 'photo_id': param0, 
   ...queryParams
   } = params;
-  return request<any>(`${/api}/photos/${param0}`, {
+  return request<any>(`/api/photos/${param0}`, {
   method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -69,7 +69,7 @@ export async function customApiFunction5(
   const { 'photo_id': param0, 
   ...queryParams
   } = params;
-  return request<any>(`${/api}/photos/${param0}`, {
+  return request<any>(`/api/photos/${param0}`, {
   method: 'DELETE',
     params: {...queryParams,},
     ...(options || {}),
@@ -80,7 +80,7 @@ export async function customApiFunction5(
 export async function customApiFunction2(
   options ?: {[key: string]: any}
 ) {
-  return request<any>(`${/api}/photos/upload`, {
+  return request<any>('/api/photos/upload', {
   method: 'POST',
     ...(options || {}),
   });
