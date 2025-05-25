@@ -3,7 +3,7 @@ import { Image, Modal, Empty, Typography, Button, Input, message } from 'antd';
 import { FullscreenOutlined, SettingOutlined, LockOutlined, UnlockOutlined } from '@ant-design/icons';
 import { Link } from 'umi';
 // 使用修复后的API服务
-import { getPhotos } from '@/services/photos';
+import { getPhotos, getPublicPhotos } from '@/services/photos';
 import { Photo } from '@/types/api';
 import './index.less';
 import '../../styles/layout.less';
@@ -41,14 +41,12 @@ const Gallery: React.FC = () => {
       console.log('📊 当前认证状态:', isAuthenticated);
       
       try {
-        // 使用修复后的API获取照片
+        // 根据认证状态使用不同的API
         console.log('📨 调用照片API...');
         
-        const response = await getPhotos({
-          per_page: 12,
-          page: 1,
-          // 如果需要搜索功能，可以添加search参数
-        });
+        const response = isAuthenticated 
+          ? await getPhotos({ per_page: 12, page: 1 })
+          : await getPublicPhotos({ per_page: 12, page: 1 });
         
         console.log('📊 API响应:', response);
         

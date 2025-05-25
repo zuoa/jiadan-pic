@@ -27,6 +27,11 @@ export class HttpClient {
   private timeout: number;
 
   constructor(baseURL: string = API_BASE_URL, timeout: number = 10000) {
+    // 验证 baseURL
+    if (!baseURL) {
+      throw new Error('API_BASE_URL 未配置或为空，请检查环境配置');
+    }
+    
     this.baseURL = baseURL;
     this.timeout = timeout;
     
@@ -35,7 +40,9 @@ export class HttpClient {
       console.log('🔧 HttpClient初始化:', {
         baseURL: this.baseURL,
         timeout: this.timeout,
-        API_BASE_URL
+        API_BASE_URL,
+        isRelativeURL: this.baseURL.startsWith('/'),
+        currentOrigin: typeof window !== 'undefined' ? window.location.origin : 'N/A (SSR)'
       });
     }
   }
@@ -71,17 +78,44 @@ export class HttpClient {
    * 构建完整URL
    */
   private buildURL(endpoint: string, params?: Record<string, any>): string {
-    const url = new URL(endpoint, this.baseURL);
-    
-    if (params) {
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          url.searchParams.append(key, String(value));
+    try {
+      let url: URL;
+      
+      // 检查 baseURL 是否是相对路径
+      if (this.baseURL.startsWith('/')) {
+        // 相对路径：直接拼接路径
+        const fullPath = this.baseURL + (endpoint.startsWith('/') ? endpoint : '/' + endpoint);
+        
+        // 检查是否在浏览器环境中
+        if (typeof window === 'undefined') {
+          throw new Error('相对路径的 API_BASE_URL 需要在浏览器环境中使用');
         }
-      });
-    }
+        
+        url = new URL(fullPath, window.location.origin);
+      } else {
+        // 绝对路径：使用原有逻辑
+        url = new URL(endpoint, this.baseURL);
+      }
+      
+      if (params) {
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            url.searchParams.append(key, String(value));
+          }
+        });
+      }
 
-    return url.toString();
+      return url.toString();
+    } catch (error: any) {
+      console.error('❌ URL构建失败:', {
+        endpoint,
+        baseURL: this.baseURL,
+        error: error.message,
+        isRelativeURL: this.baseURL.startsWith('/'),
+        windowAvailable: typeof window !== 'undefined'
+      });
+      throw new ApiError(0, 'INVALID_URL', `URL构建失败: ${error.message}`);
+    }
   }
 
   /**
