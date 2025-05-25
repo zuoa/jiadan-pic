@@ -1,8 +1,9 @@
 import React from 'react';
 import { Typography } from 'antd';
-import { PictureOutlined, SettingOutlined } from '@ant-design/icons';
+import { CameraOutlined, SettingOutlined } from '@ant-design/icons';
 import { Link, useLocation } from 'umi';
 import './index.less';
+import '../../styles/minimalist.less';
 
 const { Title } = Typography;
 
@@ -10,13 +11,13 @@ interface HeaderProps {
   className?: string;
 }
 
-const Header: React.FC<HeaderProps> = ({ className = 'header' }) => {
+const Header: React.FC<HeaderProps> = ({ className = 'minimal-header' }) => {
   const location = useLocation();
 
   const navItems = [
     {
       key: '/gallery',
-      icon: <PictureOutlined />,
+      icon: <CameraOutlined />,
       label: 'Gallery',
       path: '/gallery',
     },
@@ -30,27 +31,33 @@ const Header: React.FC<HeaderProps> = ({ className = 'header' }) => {
 
   return (
     <header className={className}>
-      <div className="header-content">
-        <div className="brand-section">
-          <div className="logo-container">
-            <PictureOutlined className="logo-icon" />
-            <Title level={3} className="logo">
-              Jiadan Gallery
-            </Title>
+      <div className="header-container">
+        {/* Brand Section */}
+        <Link to="/" className="brand-link">
+          <div className="brand">
+            <div className="brand-icon">
+              <CameraOutlined />
+            </div>
+            <div className="brand-text">
+              <Title level={4} className="brand-title">
+                Jiadan
+              </Title>
+              <span className="brand-subtitle">Gallery</span>
+            </div>
           </div>
-          <div className="brand-tagline">
-            Capturing Life's Beautiful Moments
-          </div>
-        </div>
-        <nav className="nav-menu">
+        </Link>
+
+        {/* Navigation */}
+        <nav className="navigation">
           {navItems.map((item) => (
             <Link
               key={item.key}
               to={item.path}
-              className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
+              className={`nav-link ${location.pathname === item.path ? 'active' : ''}`}
             >
-              {item.icon}
+              <div className="nav-icon">{item.icon}</div>
               <span className="nav-label">{item.label}</span>
+              <div className="nav-indicator"></div>
             </Link>
           ))}
         </nav>

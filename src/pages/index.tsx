@@ -1,137 +1,381 @@
 import React, { useEffect, useState } from 'react';
 import { history } from 'umi';
-import { Button, Card, Space, Typography, Alert } from 'antd';
+import { Button, Typography } from 'antd';
+import { CameraOutlined, SettingOutlined, ExperimentOutlined } from '@ant-design/icons';
+import '../styles/minimalist.less';
 
-const { Title, Paragraph } = Typography;
+const { Title, Text } = Typography;
 
 export default function HomePage() {
-  const [showNavigation, setShowNavigation] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
-    // 3秒后显示导航选项，而不是自动跳转
+    // 页面加载动画
     const timer = setTimeout(() => {
-      setShowNavigation(true);
-    }, 3000);
+      setIsLoaded(true);
+    }, 300);
 
-    return () => clearTimeout(timer);
+    // 实时时间更新
+    const timeInterval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => {
+      clearTimeout(timer);
+      clearInterval(timeInterval);
+    };
   }, []);
 
   const navigateTo = (path: string) => {
     history.push(path);
   };
 
-  if (!showNavigation) {
-    return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        background: 'linear-gradient(135deg, #fafafa 0%, #ffffff 50%, #f8f8f8 100%)'
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{
-            width: '40px',
-            height: '40px',
-            border: '3px solid #f3f3f3',
-            borderTop: '3px solid #1890ff',
-            borderRadius: '50%',
-            margin: '0 auto 16px',
-            animation: 'spin 1s linear infinite'
-          }}></div>
-          <p style={{ color: '#666', fontSize: '16px', margin: 0 }}>
-            正在加载照片管理系统...
-          </p>
-        </div>
-        <style dangerouslySetInnerHTML={{
-          __html: `
-            @keyframes spin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
-            }
-          `
-        }} />
-      </div>
-    );
-  }
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('zh-CN', {
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  };
+
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('zh-CN', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      weekday: 'long'
+    });
+  };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #fafafa 0%, #ffffff 50%, #f8f8f8 100%)',
-      padding: '40px 20px'
-    }}>
-      <div style={{ maxWidth: 800, margin: '0 auto' }}>
-        <Card>
-          <Title level={2} style={{ textAlign: 'center', marginBottom: 30 }}>
-            🖼️ 贾丹照片管理系统
-          </Title>
-          
-          <Alert
-            message="系统功能导航"
-            description="请选择要访问的功能模块。如果您遇到API连接问题，建议先访问API测试页面进行调试。"
-            type="info"
-            showIcon
-            style={{ marginBottom: 30 }}
-          />
-
-          <Space direction="vertical" size="large" style={{ width: '100%' }}>
-            <Card title="📸 用户功能" size="small">
-              <Space wrap>
-                <Button 
-                  type="primary" 
-                  size="large"
-                  onClick={() => navigateTo('/gallery')}
-                >
-                  📷 查看相册
-                </Button>
-                <Button 
-                  size="large"
-                  onClick={() => navigateTo('/admin')}
-                >
-                  🔐 管理后台
-                </Button>
-              </Space>
-            </Card>
-
-            <Card title="🔧 开发工具" size="small">
-              <Paragraph>
-                <strong>API测试页面：</strong>用于测试和调试API连接问题
-              </Paragraph>
-              <Button 
-                type="dashed" 
-                size="large"
-                onClick={() => navigateTo('/api-test')}
-                style={{ backgroundColor: '#f6ffed', borderColor: '#b7eb8f' }}
-              >
-                🧪 API连接测试
-              </Button>
-            </Card>
-
-            <Card title="📖 开发文档" size="small">
-              <Space direction="vertical" style={{ width: '100%' }}>
-                <Paragraph>
-                  <strong>API集成说明：</strong> 查看 <code>API_INTEGRATION.md</code> 文件
-                </Paragraph>
-                <Paragraph>
-                  <strong>代理配置说明：</strong> 查看 <code>PROXY_CONFIG.md</code> 文件
-                </Paragraph>
-                <Paragraph>
-                  <strong>调试指南：</strong> 查看 <code>DEBUG_GUIDE.md</code> 文件
-                </Paragraph>
-              </Space>
-            </Card>
-          </Space>
-
-          <Alert
-            message="💡 提示"
-            description="如果API请求没有发送，请访问API测试页面进行调试。确保后端服务运行在 http://localhost:9000"
-            type="warning"
-            showIcon
-            style={{ marginTop: 30 }}
-          />
-        </Card>
+    <div className={`homepage ${isLoaded ? 'loaded' : ''}`}>
+      {/* Background Elements */}
+      <div className="background-elements">
+        <div className="floating-dot dot-1"></div>
+        <div className="floating-dot dot-2"></div>
+        <div className="floating-dot dot-3"></div>
       </div>
+
+      {/* Main Content */}
+      <div className="homepage-content">
+        {/* Header Section */}
+        <header className="homepage-header animate-fade-in">
+          <div className="time-display">
+            <div className="current-time">{formatTime(currentTime)}</div>
+            <div className="current-date">{formatDate(currentTime)}</div>
+          </div>
+          
+          <div className="brand-section">
+            <Title level={1} className="brand-title">
+              Jiadan
+            </Title>
+            <Text className="brand-subtitle">
+              Visual Stories Collection
+            </Text>
+          </div>
+        </header>
+
+        {/* Navigation Grid */}
+        <nav className="navigation-grid animate-slide-up">
+          <div 
+            className="nav-item primary interactive"
+            onClick={() => navigateTo('/gallery')}
+          >
+            <div className="nav-icon">
+              <CameraOutlined />
+            </div>
+            <div className="nav-content">
+              <h3>Gallery</h3>
+              <p>Explore visual stories</p>
+            </div>
+            <div className="nav-arrow">→</div>
+          </div>
+
+          <div 
+            className="nav-item secondary interactive"
+            onClick={() => navigateTo('/admin')}
+          >
+            <div className="nav-icon">
+              <SettingOutlined />
+            </div>
+            <div className="nav-content">
+              <h3>Admin</h3>
+              <p>Manage content</p>
+            </div>
+            <div className="nav-arrow">→</div>
+          </div>
+
+          <div 
+            className="nav-item tertiary interactive"
+            onClick={() => navigateTo('/api-test')}
+          >
+            <div className="nav-icon">
+              <ExperimentOutlined />
+            </div>
+            <div className="nav-content">
+              <h3>API Test</h3>
+              <p>Debug & monitor</p>
+            </div>
+            <div className="nav-arrow">→</div>
+          </div>
+        </nav>
+
+        {/* Footer */}
+        <footer className="homepage-footer animate-fade-in">
+          <Text className="footer-text">
+            Crafted with precision and care
+          </Text>
+        </footer>
+      </div>
+
+      <style dangerouslySetInnerHTML={{
+        __html: `
+        .homepage {
+          min-height: 100vh;
+          background: var(--color-background);
+          position: relative;
+          overflow: hidden;
+          opacity: 0;
+          transition: opacity var(--transition-slow);
+        }
+
+        .homepage.loaded {
+          opacity: 1;
+        }
+
+        .background-elements {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+          z-index: 0;
+        }
+
+        .floating-dot {
+          position: absolute;
+          width: 2px;
+          height: 2px;
+          background: var(--color-border);
+          border-radius: 50%;
+          animation: float 6s ease-in-out infinite;
+        }
+
+        .dot-1 {
+          top: 20%;
+          left: 10%;
+          animation-delay: 0s;
+        }
+
+        .dot-2 {
+          top: 60%;
+          right: 15%;
+          animation-delay: 2s;
+        }
+
+        .dot-3 {
+          bottom: 30%;
+          left: 20%;
+          animation-delay: 4s;
+        }
+
+        .homepage-content {
+          position: relative;
+          z-index: 1;
+          max-width: 800px;
+          margin: 0 auto;
+          padding: var(--space-3xl) var(--space-lg);
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          min-height: 100vh;
+          gap: var(--space-3xl);
+        }
+
+        .homepage-header {
+          text-align: center;
+          animation-delay: 0.1s;
+        }
+
+        .time-display {
+          margin-bottom: var(--space-xl);
+          opacity: 0.6;
+        }
+
+        .current-time {
+          font-family: var(--font-family-mono);
+          font-size: var(--font-size-2xl);
+          font-weight: 300;
+          color: var(--color-text-primary);
+          margin-bottom: var(--space-xs);
+        }
+
+        .current-date {
+          font-size: var(--font-size-sm);
+          color: var(--color-text-secondary);
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+
+        .brand-section {
+          margin-bottom: var(--space-lg);
+        }
+
+        .brand-title {
+          font-size: var(--font-size-4xl) !important;
+          font-weight: 200 !important;
+          letter-spacing: -1px !important;
+          margin-bottom: var(--space-sm) !important;
+          color: var(--color-text-primary) !important;
+        }
+
+        .brand-subtitle {
+          font-size: var(--font-size-lg);
+          color: var(--color-text-secondary);
+          font-weight: 300;
+          letter-spacing: 0.5px;
+        }
+
+        .navigation-grid {
+          display: grid;
+          gap: var(--space-md);
+          animation-delay: 0.3s;
+        }
+
+        .nav-item {
+          display: flex;
+          align-items: center;
+          gap: var(--space-lg);
+          padding: var(--space-xl);
+          border: 1px solid var(--color-border);
+          border-radius: var(--radius-lg);
+          background: var(--color-background);
+          transition: all var(--transition-base);
+          cursor: pointer;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .nav-item::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.02), transparent);
+          transition: left var(--transition-slow);
+        }
+
+        .nav-item:hover::before {
+          left: 100%;
+        }
+
+        .nav-item:hover {
+          transform: translateY(-2px);
+          box-shadow: var(--shadow-lg);
+          border-color: var(--color-primary);
+        }
+
+        .nav-item.primary:hover {
+          border-color: var(--color-primary);
+        }
+
+        .nav-item.secondary:hover {
+          border-color: var(--color-secondary);
+        }
+
+        .nav-item.tertiary:hover {
+          border-color: var(--color-tertiary);
+        }
+
+        .nav-icon {
+          font-size: var(--font-size-2xl);
+          color: var(--color-text-secondary);
+          transition: all var(--transition-base);
+          min-width: 40px;
+        }
+
+        .nav-item:hover .nav-icon {
+          color: var(--color-text-primary);
+          transform: scale(1.1);
+        }
+
+        .nav-content {
+          flex: 1;
+        }
+
+        .nav-content h3 {
+          margin: 0 0 var(--space-xs) 0;
+          font-size: var(--font-size-xl);
+          font-weight: 500;
+          color: var(--color-text-primary);
+        }
+
+        .nav-content p {
+          margin: 0;
+          font-size: var(--font-size-sm);
+          color: var(--color-text-secondary);
+        }
+
+        .nav-arrow {
+          font-size: var(--font-size-xl);
+          color: var(--color-text-muted);
+          transition: all var(--transition-base);
+          opacity: 0;
+          transform: translateX(-10px);
+        }
+
+        .nav-item:hover .nav-arrow {
+          opacity: 1;
+          transform: translateX(0);
+          color: var(--color-text-primary);
+        }
+
+        .homepage-footer {
+          text-align: center;
+          animation-delay: 0.5s;
+        }
+
+        .footer-text {
+          font-size: var(--font-size-sm);
+          color: var(--color-text-muted);
+          font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+          .homepage-content {
+            padding: var(--space-2xl) var(--space-md);
+            gap: var(--space-2xl);
+          }
+
+          .brand-title {
+            font-size: var(--font-size-3xl) !important;
+          }
+
+          .current-time {
+            font-size: var(--font-size-xl);
+          }
+
+          .nav-item {
+            padding: var(--space-lg);
+            gap: var(--space-md);
+          }
+
+          .nav-icon {
+            font-size: var(--font-size-xl);
+            min-width: 32px;
+          }
+
+          .nav-content h3 {
+            font-size: var(--font-size-lg);
+          }
+        }
+        `
+      }} />
     </div>
   );
 }

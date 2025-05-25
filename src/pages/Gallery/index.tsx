@@ -186,10 +186,14 @@ const Gallery: React.FC = () => {
           </div>
         ) : (
           <div className="gallery-grid">
-            {photos.map((photo) => (
-              <div key={photo.id} className="photo-card-wrapper">
+            {photos.map((photo, index) => (
+              <div 
+                key={photo.id} 
+                className="photo-card-wrapper"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
                 <div 
-                  className="minimal-photo-card" 
+                  className="minimal-photo-card interactive" 
                   onClick={() => handlePreview(photo)}
                 >
                   <div className="photo-image-container">
@@ -201,14 +205,13 @@ const Gallery: React.FC = () => {
                     />
                     
                     <div className="photo-overlay">
-                      <div className="overlay-bottom">
-                        <div className="photo-info">
-                          {photo.title && <h4 className="photo-title">{photo.title}</h4>}
-                          {photo.description && <p className="photo-description">{photo.description}</p>}
-                          <div className="photo-meta">
-                            <span className="photo-date">{photo.date}</span>
-                          </div>
-                        </div>
+                      <div className="photo-info">
+                        {photo.title && (
+                          <h4 className="photo-title">{photo.title}</h4>
+                        )}
+                        {photo.description && (
+                          <p className="photo-description">{photo.description}</p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -221,110 +224,75 @@ const Gallery: React.FC = () => {
         {/* Preview Modal */}
         <Modal
           open={previewVisible}
-          title={null}
+          title={previewData?.title}
           footer={null}
           onCancel={() => setPreviewVisible(false)}
           width="90%"
           centered
-          className="photo-preview-modal"
           destroyOnClose
         >
-          <div className="modal-content">
-            <div className="modal-image-section">
+          {previewData && (
+            <div className="modal-content">
               <Image
                 alt="preview"
-                src={previewData?.src}
-                className="preview-image"
+                src={previewData.src}
+                className="modal-image"
                 preview={false}
               />
+              {previewData.description && (
+                <div className="modal-description">
+                  <p>{previewData.description}</p>
+                </div>
+              )}
             </div>
-            
-            {previewData && (
-              <div className="modal-info-section">
-                <div className="modal-header">
-                  <h2 className="modal-title">{previewData.title}</h2>
-                  <div className="modal-actions">
-                    <Button
-                      type="text"
-                      icon={<FullscreenOutlined />}
-                      onClick={() => {
-                        const link = document.createElement('a');
-                        link.href = previewData.src;
-                        link.target = '_blank';
-                        link.click();
-                      }}
-                    >
-                      Full Size
-                    </Button>
-                  </div>
-                </div>
-                
-                <div className="modal-details">
-                  {previewData.description && (
-                    <p className="modal-description">{previewData.description}</p>
-                  )}
-                  
-                  <div className="modal-meta">
-                    <div className="meta-item">
-                      <span className="meta-label">Date:</span>
-                      <span className="meta-value">{previewData.date}</span>
-                    </div>
-                    {previewData.location && (
-                      <div className="meta-item">
-                        <span className="meta-label">Location:</span>
-                        <span className="meta-value">{previewData.location}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
+          )}
         </Modal>
 
-        {/* 权限验证弹窗 */}
+        {/* Auth Modal */}
         <Modal
-          title="查看完整相册"
           open={authModalVisible}
           onCancel={() => {
             setAuthModalVisible(false);
             setPassword('');
           }}
-          footer={[
-            <Button key="cancel" onClick={() => {
-              setAuthModalVisible(false);
-              setPassword('');
-            }}>
-              取消
-            </Button>,
-            <Button 
-              key="submit" 
-              type="primary" 
-              loading={authLoading}
-              onClick={handleAuth}
-              disabled={!password}
-            >
-              验证
-            </Button>
-          ]}
+          footer={null}
           className="auth-modal"
           destroyOnClose
+          centered
         >
           <div className="auth-content">
-            <div className="auth-description">
-              <LockOutlined style={{ fontSize: '48px', color: '#000000', marginBottom: '16px' }} />
-              <p>需要密码才能查看完整相册。</p>
-            </div>
+            <h3 className="auth-title">Access Full Gallery</h3>
+            <p className="auth-description">
+              Enter password to view the complete collection
+            </p>
             
             <Input.Password
-              placeholder="请输入查看密码"
+              placeholder="Enter password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onPressEnter={handleAuth}
               size="large"
-              style={{ marginTop: '24px' }}
               autoFocus
             />
+            
+            <div className="auth-actions">
+              <Button 
+                onClick={() => {
+                  setAuthModalVisible(false);
+                  setPassword('');
+                }}
+              >
+                Cancel
+              </Button>
+              <Button 
+                type="primary" 
+                loading={authLoading}
+                onClick={handleAuth}
+                disabled={!password}
+              >
+                Verify
+              </Button>
+            </div>
           </div>
         </Modal>
       </div>

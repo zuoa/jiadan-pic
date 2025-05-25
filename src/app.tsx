@@ -1,5 +1,7 @@
 // Umi 应用运行时配置
 import { ApiTester } from '@/utils/apiTest';
+// 引入极简主义设计系统
+import './styles/minimalist.less';
 
 // 应用初始化
 export function render(oldRender: () => void) {
