@@ -97,8 +97,8 @@ declare namespace API {
     thumbnail?: string;
     /** 拍摄日期 */
     date?: string;
-    /** 文件大小 */
-    size?: string;
+    /** 文件大小（字节） */
+    size?: number;
     /** 拍摄地点 */
     location?: string;
     /** 是否公开 */

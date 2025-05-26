@@ -31,6 +31,14 @@ export async function createPhoto(data: PhotoCreateRequest) {
 
 // 更新照片信息
 export async function updatePhoto(photoId: string, data: PhotoUpdateRequest) {
+  console.log('🔄 updatePhoto API调用:', {
+    photoId,
+    data,
+    dataTypes: Object.keys(data).reduce((acc, key) => {
+      acc[key] = typeof data[key as keyof PhotoUpdateRequest];
+      return acc;
+    }, {} as Record<string, string>)
+  });
   return httpClient.put<Photo>(`/photos/${photoId}`, data);
 }
 
@@ -56,5 +64,12 @@ export async function batchUpdatePhotos(photoIds: string[], updates: Partial<Pho
 
 // 切换照片公开状态
 export async function togglePhotoVisibility(photoId: string, isPublic: boolean) {
-  return httpClient.patch<Photo>(`/photos/${photoId}/visibility`, { is_public: isPublic });
+  try {
+    // 首先尝试专用的可见性切换API
+    return await httpClient.patch<Photo>(`/photos/${photoId}/visibility`, { is_public: isPublic });
+  } catch (error) {
+    console.warn('专用可见性API失败，尝试使用更新API:', error);
+    // 如果专用API失败，使用通用的更新API
+    return await httpClient.put<Photo>(`/photos/${photoId}`, { is_public: isPublic });
+  }
 } 

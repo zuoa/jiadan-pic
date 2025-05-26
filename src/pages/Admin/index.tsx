@@ -164,11 +164,11 @@ const Admin: React.FC = () => {
       title: 'Thumbnail',
       dataIndex: 'thumbnail',
       key: 'thumbnail',
-      width: 100,
+      width: 80,
       render: (thumbnail: string) => (
         <Image
           width={60}
-          height={40}
+          height={60}
           src={thumbnail}
           style={{ objectFit: 'cover', borderRadius: 4 }}
         />
@@ -178,12 +178,6 @@ const Admin: React.FC = () => {
       title: 'Title',
       dataIndex: 'title',
       key: 'title',
-    },
-    {
-      title: 'Description',
-      dataIndex: 'description',
-      key: 'description',
-      ellipsis: true,
     },
     {
       title: 'Location',
@@ -220,11 +214,6 @@ const Admin: React.FC = () => {
       dataIndex: 'date',
       key: 'date',
       sorter: (a, b) => dayjs(a.date).unix() - dayjs(b.date).unix(),
-    },
-    {
-      title: 'File Size',
-      dataIndex: 'size',
-      key: 'size',
     },
     {
       title: 'Actions',
@@ -265,6 +254,8 @@ const Admin: React.FC = () => {
     setEditingPhoto(null);
     setFileList([]);
     form.resetFields();
+    // 为新照片设置默认值
+    form.setFieldsValue({ isPublic: false });
     setModalVisible(true);
   };
 
@@ -272,10 +263,16 @@ const Admin: React.FC = () => {
     setEditingPhoto(photo);
     form.setFieldsValue({
       ...photo,
+      isPublic: photo.isPublic, // 确保公开状态字段正确设置
       date: dayjs(photo.date),
     });
     setFileList([]);
     setModalVisible(true);
+    console.log('📝 编辑照片，设置表单值:', {
+      ...photo,
+      isPublic: photo.isPublic,
+      date: dayjs(photo.date),
+    });
   };
 
   const handleDelete = async (id: string) => {
@@ -293,36 +290,76 @@ const Admin: React.FC = () => {
 
   const handleToggleVisibility = async (id: string, isPublic: boolean) => {
     try {
+      console.log(`🔄 切换照片 ${id} 的公开状态为: ${isPublic}`);
       await togglePhotoVisibility(id, isPublic);
+      
       // 更新本地状态
       setPhotos(photos.map(photo => 
         photo.id === id ? { ...photo, isPublic } : photo
       ));
       message.success(`照片已${isPublic ? '公开' : '设为私有'}`);
+      
       // 重新加载统计数据
       loadData();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Toggle visibility failed:', error);
-      message.error('状态切换失败，请稍后重试');
+      
+      // 提供更详细的错误信息
+      let errorMessage = '状态切换失败';
+      if (error?.status === 404) {
+        errorMessage = '照片不存在或API路由未找到';
+      } else if (error?.status === 500) {
+        errorMessage = '服务器内部错误，请检查后端服务';
+      } else if (error?.message) {
+        errorMessage = `切换失败: ${error.message}`;
+      }
+      
+      message.error(errorMessage);
+      
+      // 如果API调用失败，恢复开关状态
+      // 这里不需要手动恢复，因为状态没有被更新
     }
   };
 
   const handlePreview = (photo: Photo) => {
     Modal.info({
       title: photo.title,
-      width: '80%',
+      width: '90%',
       content: (
         <div style={{ textAlign: 'center' }}>
-          <Image src={photo.src} style={{ maxWidth: '100%' }} />
-          <p style={{ marginTop: 16, color: '#666' }}>{photo.description}</p>
+          <Image 
+            src={photo.src} 
+            style={{ 
+              maxWidth: '100%', 
+              maxHeight: '70vh',
+              objectFit: 'contain'
+            }} 
+            preview={{
+              src: photo.src, // 确保预览时显示原图
+            }}
+          />
+          {photo.description && (
+            <p style={{ marginTop: 16, color: '#666', fontSize: '14px' }}>
+              {photo.description}
+            </p>
+          )}
+          {photo.location && (
+            <p style={{ margin: '8px 0 0 0', color: '#999', fontSize: '12px' }}>
+              <EnvironmentOutlined style={{ marginRight: 4 }} />
+              {photo.location}
+            </p>
+          )}
         </div>
       ),
+      okText: '关闭',
+      centered: true,
     });
   };
 
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
+      console.log('📋 表单验证通过，获取到的值:', values);
       
       if (editingPhoto) {
         // 编辑现有照片
@@ -331,8 +368,22 @@ const Admin: React.FC = () => {
           description: values.description || editingPhoto.description,
           date: values.date ? values.date.format('YYYY-MM-DD') : editingPhoto.date,
           location: values.location || editingPhoto.location,
-          is_public: values.isPublic !== undefined ? values.isPublic : editingPhoto.isPublic,
+          is_public: typeof values.isPublic === 'boolean' ? values.isPublic : editingPhoto.isPublic,
         };
+
+        console.log('📝 编辑照片，准备更新数据:', {
+          photoId: editingPhoto.id,
+          formValues: values,
+          updateData,
+          originalPhoto: editingPhoto,
+          isPublicCheck: {
+            'values.isPublic': values.isPublic,
+            'values.isPublic !== undefined': values.isPublic !== undefined,
+            'editingPhoto.isPublic': editingPhoto.isPublic,
+            'final is_public': updateData.is_public,
+            'typeof final is_public': typeof updateData.is_public
+          }
+        });
 
         await updatePhoto(editingPhoto.id, updateData);
         message.success('照片信息更新成功');
@@ -372,7 +423,7 @@ const Admin: React.FC = () => {
         formData.append('description', values.description || '');
         formData.append('date', values.date ? values.date.format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'));
         formData.append('location', values.location || '');
-        formData.append('is_public', String(values.isPublic !== undefined ? values.isPublic : false));
+        formData.append('is_public', String(typeof values.isPublic === 'boolean' ? values.isPublic : false));
 
         // 调试FormData内容
         console.log('📤 FormData内容:');
@@ -441,22 +492,70 @@ const Admin: React.FC = () => {
     },
   };
 
+  // 格式化文件大小的函数
+  const formatFileSize = (bytes: number): { value: string; unit: string } => {
+    if (bytes === 0) return { value: '0', unit: 'B' };
+    
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    
+    const value = (bytes / Math.pow(k, i)).toFixed(i === 0 ? 0 : 1);
+    return { value, unit: sizes[i] };
+  };
+
   // 统计数据
   const totalPhotos = stats?.data?.total_photos || photos.length;
   const publicPhotos = stats?.data?.public_photos || photos.filter(p => p.isPublic).length;
   const privatePhotos = stats?.data?.private_photos || photos.filter(p => !p.isPublic).length;
   
-  // 计算总大小
-  let totalSizeNum = 0;
+  // 计算总大小（字节）
+  let totalSizeBytes = 0;
   if (stats?.data?.total_size) {
-    totalSizeNum = parseFloat(stats.data.total_size.replace(' MB', ''));
+    // 如果API返回格式化的大小字符串，尝试解析
+    const sizeStr = stats.data.total_size;
+    if (sizeStr.includes('MB')) {
+      totalSizeBytes = parseFloat(sizeStr.replace(' MB', '')) * 1024 * 1024;
+    } else if (sizeStr.includes('KB')) {
+      totalSizeBytes = parseFloat(sizeStr.replace(' KB', '')) * 1024;
+    } else if (sizeStr.includes('GB')) {
+      totalSizeBytes = parseFloat(sizeStr.replace(' GB', '')) * 1024 * 1024 * 1024;
+    } else if (sizeStr.includes('B') && !sizeStr.includes('KB') && !sizeStr.includes('MB') && !sizeStr.includes('GB')) {
+      totalSizeBytes = parseFloat(sizeStr.replace(' B', ''));
+    } else {
+      // 如果是纯数字，假设是字节
+      const numValue = parseFloat(sizeStr);
+      if (!isNaN(numValue)) {
+        totalSizeBytes = numValue;
+      }
+    }
   } else {
-    totalSizeNum = photos.reduce((acc, photo) => {
-      const size = parseFloat(photo.size?.replace(' MB', '') || '0');
-      return acc + size;
+    // 从本地照片数据计算
+    totalSizeBytes = photos.reduce((acc, photo) => {
+      if (photo.size) {
+        let sizeInBytes = 0;
+        if (photo.size.includes('MB')) {
+          sizeInBytes = parseFloat(photo.size.replace(' MB', '')) * 1024 * 1024;
+        } else if (photo.size.includes('KB')) {
+          sizeInBytes = parseFloat(photo.size.replace(' KB', '')) * 1024;
+        } else if (photo.size.includes('GB')) {
+          sizeInBytes = parseFloat(photo.size.replace(' GB', '')) * 1024 * 1024 * 1024;
+        } else if (photo.size.includes('B') && !photo.size.includes('KB') && !photo.size.includes('MB') && !photo.size.includes('GB')) {
+          sizeInBytes = parseFloat(photo.size.replace(' B', ''));
+        } else {
+          // 如果是纯数字，假设是字节
+          const numValue = parseFloat(photo.size);
+          if (!isNaN(numValue)) {
+            sizeInBytes = numValue;
+          }
+        }
+        return acc + sizeInBytes;
+      }
+      return acc;
     }, 0);
   }
-  const totalSize = totalSizeNum.toFixed(1);
+  
+  const formattedSize = formatFileSize(totalSizeBytes);
 
   return (
     <Layout className="basic-layout">
@@ -493,8 +592,8 @@ const Admin: React.FC = () => {
           <Card>
             <Statistic
               title="Total Storage"
-              value={totalSize}
-              suffix="MB"
+              value={formattedSize.value}
+              suffix={formattedSize.unit}
               prefix={<FileImageOutlined />}
             />
           </Card>
@@ -550,7 +649,7 @@ const Admin: React.FC = () => {
           } 
         }}
       >
-        <Form form={form} layout="vertical" initialValues={{ isPublic: false }}>
+        <Form form={form} layout="vertical">
           {/* 图片上传区域 - 放在最上方 */}
           {!editingPhoto && (
             <Form.Item label="Upload Photo" required style={{ marginBottom: 24 }}>
@@ -570,43 +669,39 @@ const Admin: React.FC = () => {
 
           {/* 隐私设置区域 - 紧跟上传区域 */}
           <div style={{ marginBottom: 24 }}>
-            <Form.Item
-              name="isPublic"
-              label="Visibility Setting"
-              valuePropName="checked"
-            >
-              <div style={{ 
-                padding: '12px 16px', 
-                border: '1px solid #d9d9d9', 
-                borderRadius: '6px',
-                backgroundColor: '#fafafa'
-              }}>
-                <Row align="middle" justify="space-between">
-                  <Col>
-                    <Space>
-                      <LockOutlined style={{ color: '#000', fontSize: '16px' }} />
-                      <div>
-                        <div style={{ fontWeight: 500 }}>Make this photo public</div>
-                        <div style={{ fontSize: '12px', color: '#666' }}>
-                          Turn on to allow others to view this photo
-                        </div>
+            <div style={{ marginBottom: 8, fontWeight: 500 }}>Visibility Setting</div>
+            <div style={{ 
+              padding: '12px 16px', 
+              border: '1px solid #d9d9d9', 
+              borderRadius: '6px',
+              backgroundColor: '#fafafa'
+            }}>
+              <Row align="middle" justify="space-between">
+                <Col>
+                  <Space>
+                    <LockOutlined style={{ color: '#000', fontSize: '16px' }} />
+                    <div>
+                      <div style={{ fontWeight: 500 }}>Make this photo public</div>
+                      <div style={{ fontSize: '12px', color: '#666' }}>
+                        Turn on to allow others to view this photo
                       </div>
-                    </Space>
-                  </Col>
-                  <Col>
+                    </div>
+                  </Space>
+                </Col>
+                <Col>
+                  <Form.Item name="isPublic" valuePropName="checked" noStyle>
                     <Switch 
                       checkedChildren={<GlobalOutlined />}
                       unCheckedChildren={<LockOutlined />}
-                      defaultChecked={false}
                       size="default"
                       style={{
                         backgroundColor: '#000'
                       }}
                     />
-                  </Col>
-                </Row>
-              </div>
-            </Form.Item>
+                  </Form.Item>
+                </Col>
+              </Row>
+            </div>
           </div>
 
           {/* 详细信息区域 - 可折叠 */}
