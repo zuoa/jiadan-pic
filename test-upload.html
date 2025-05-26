@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>上传测试</title>
+</head>
+<body>
+    <h1>上传功能测试</h1>
+    
+    <form id="uploadForm">
+        <div>
+            <label for="fileInput">选择图片文件:</label>
+            <input type="file" id="fileInput" accept="image/*" required>
+        </div>
+        <div>
+            <label for="titleInput">标题:</label>
+            <input type="text" id="titleInput" value="测试照片">
+        </div>
+        <div>
+            <label for="descInput">描述:</label>
+            <textarea id="descInput">这是一张测试照片</textarea>
+        </div>
+        <div>
+            <label for="locationInput">位置:</label>
+            <input type="text" id="locationInput" value="测试地点">
+        </div>
+        <div>
+            <label for="publicInput">公开:</label>
+            <input type="checkbox" id="publicInput">
+        </div>
+        <button type="submit">上传</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('请选择文件');
+                return;
+            }
+
+            console.log('📁 选择的文件:', {
+                name: file.name,
+                type: file.type,
+                size: file.size,
+                lastModified: file.lastModified
+            });
+
+            const formData = new FormData();
+            formData.append('file', file, file.name);
+            formData.append('title', document.getElementById('titleInput').value);
+            formData.append('description', document.getElementById('descInput').value);
+            formData.append('date', new Date().toISOString().split('T')[0]);
+            formData.append('location', document.getElementById('locationInput').value);
+            formData.append('is_public', document.getElementById('publicInput').checked.toString());
+
+            console.log('📤 FormData内容:');
+            for (let [key, value] of formData.entries()) {
+                console.log(`  ${key}:`, value);
+            }
+
+            try {
+                const response = await fetch('http://localhost:8000/api/photos/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer your-token-here' // 需要替换为真实token
+                    },
+                    body: formData
+                });
+
+                const result = await response.json();
+                console.log('📨 响应:', result);
+                
+                document.getElementById('result').innerHTML = `
+                    <h3>响应结果:</h3>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+            } catch (error) {
+                console.error('❌ 上传失败:', error);
+                document.getElementById('result').innerHTML = `
+                    <h3>错误:</h3>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        });
+    </script>
+</body>
+</html> 

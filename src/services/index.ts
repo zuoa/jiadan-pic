@@ -6,6 +6,8 @@ export type * from '@/types/api';
 
 // 导出修复后的API服务
 export * from './photos';
+export * from './auth';
+export * from './dashboard';
 
 // 导出OpenAPI生成的API服务（备用）
 export { default as API } from './jiadan-pic-api';

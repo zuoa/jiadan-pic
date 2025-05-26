@@ -258,20 +258,90 @@ export class HttpClient {
   }
 
   /**
+   * PATCH 请求
+   */
+  async patch<T>(endpoint: string, data?: any, options: RequestOptions = {}): Promise<T> {
+    const body = data ? JSON.stringify(data) : undefined;
+    return this.request<T>(endpoint, { ...options, method: 'PATCH', body });
+  }
+
+  /**
    * 文件上传请求
    */
   async upload<T>(endpoint: string, formData: FormData, options: RequestOptions = {}): Promise<T> {
     // 对于文件上传，不设置Content-Type，让浏览器自动设置
-    const { headers, ...restOptions } = options;
-    const uploadHeaders = new Headers(headers);
-    uploadHeaders.delete('Content-Type');
+    // 我们需要绕过buildHeaders方法来避免设置默认的Content-Type
+    const url = this.buildURL(endpoint);
+    
+    // 手动构建headers，不包含Content-Type
+    const headers = new Headers();
+    const token = this.getAuthToken();
+    if (token) {
+      headers.set('Authorization', `Bearer ${token}`);
+    }
 
-    return this.request<T>(endpoint, {
-      ...restOptions,
-      method: 'POST',
-      body: formData,
-      headers: uploadHeaders,
-    });
+    // 开发环境下输出调试信息
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🚀 文件上传请求详情:', {
+        endpoint,
+        url,
+        method: 'POST',
+        headers: Object.fromEntries(headers.entries()),
+        formDataKeys: Array.from(formData.keys()),
+        baseURL: this.baseURL
+      });
+    }
+
+    // 创建AbortController用于超时控制
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: formData,
+        signal: controller.signal,
+      });
+
+      // 开发环境下输出响应信息
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📨 文件上传响应详情:', {
+          url,
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries()),
+        });
+      }
+
+      clearTimeout(timeoutId);
+      return await this.handleResponse<T>(response);
+    } catch (error: any) {
+      clearTimeout(timeoutId);
+      
+      // 开发环境下输出错误信息
+      if (process.env.NODE_ENV === 'development') {
+        console.error('❌ 文件上传失败:', {
+          url,
+          error: error.message,
+          type: error.name,
+        });
+      }
+      
+      if (error instanceof ApiError) {
+        throw error;
+      }
+
+      if (error.name === 'AbortError') {
+        throw new ApiError(0, 'TIMEOUT', '请求超时');
+      }
+
+      if (error.name === 'TypeError') {
+        throw new ApiError(0, 'NETWORK_ERROR', '网络连接失败');
+      }
+
+      throw new ApiError(0, 'UNKNOWN_ERROR', error.message || '未知错误');
+    }
   }
 }
 

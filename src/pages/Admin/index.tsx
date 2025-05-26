@@ -43,6 +43,9 @@ import {
 } from '@ant-design/icons';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import { AdminAuth } from '../../utils/auth';
+import { getPhotos, deletePhoto, updatePhoto, uploadPhoto, togglePhotoVisibility } from '@/services/photos';
+import { getStats } from '@/services/dashboard';
+import { Photo as ApiPhoto, DashboardStats } from '@/types/api';
 import type { ColumnsType } from 'antd/es/table';
 import type { UploadFile, UploadProps } from 'antd/es/upload';
 import type { MenuProps } from 'antd';
@@ -75,9 +78,10 @@ const Admin: React.FC = () => {
   const [editingPhoto, setEditingPhoto] = useState<Photo | null>(null);
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
 
   // 获取当前用户信息
-  const currentUser = AdminAuth.getCurrentUser();
+  const currentUser = AdminAuth.getCurrentUsername() || 'Admin';
 
   // 用户菜单项
   const userMenuItems: MenuProps['items'] = [
@@ -114,47 +118,46 @@ const Admin: React.FC = () => {
     });
   }
 
-  // Simulate data loading
+  // 加载数据
   useEffect(() => {
-    setTimeout(() => {
-      setPhotos([
-        {
-          id: '1',
-          title: 'Beautiful Landscape',
-          description: 'Captured at a breathtaking location',
-          src: 'https://picsum.photos/800/600?random=1',
-          thumbnail: 'https://picsum.photos/300/200?random=1',
-          date: '2024-01-15',
-          size: '2.1 MB',
-          location: '黄山风景区',
-          isPublic: true,
-        },
-        {
-          id: '2',
-          title: 'City Night View',
-          description: 'The charm of city lights at night',
-          src: 'https://picsum.photos/800/600?random=2',
-          thumbnail: 'https://picsum.photos/300/200?random=2',
-          date: '2024-02-20',
-          size: '3.5 MB',
-          location: '上海外滩',
-          isPublic: false,
-        },
-        {
-          id: '3',
-          title: 'Nature\'s Beauty',
-          description: 'The magnificence of natural wonders',
-          src: 'https://picsum.photos/800/600?random=3',
-          thumbnail: 'https://picsum.photos/300/200?random=3',
-          date: '2024-03-10',
-          size: '1.8 MB',
-          location: '张家界国家森林公园',
-          isPublic: true,
-        },
-      ]);
-      setLoading(false);
-    }, 800);
+    loadData();
   }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      // 并行加载照片列表和统计数据
+      const [photosResponse, statsResponse] = await Promise.all([
+        getPhotos({ per_page: 50, page: 1 }),
+        getStats()
+      ]);
+
+      if (photosResponse.success && photosResponse.data) {
+        // 转换API数据格式为组件需要的格式
+        const transformedPhotos: Photo[] = photosResponse.data.photos.map((photo: ApiPhoto) => ({
+          id: photo.id,
+          title: photo.title,
+          description: photo.description,
+          src: photo.src,
+          thumbnail: photo.thumbnail,
+          date: photo.date,
+          size: photo.size,
+          location: photo.location,
+          isPublic: photo.is_public,
+        }));
+        setPhotos(transformedPhotos);
+      }
+
+      if (statsResponse.success) {
+        setStats(statsResponse);
+      }
+    } catch (error) {
+      console.error('Failed to load data:', error);
+      message.error('加载数据失败，请稍后重试');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const columns: ColumnsType<Photo> = [
     {
@@ -197,10 +200,19 @@ const Admin: React.FC = () => {
       title: 'Status',
       dataIndex: 'isPublic',
       key: 'isPublic',
-      render: (isPublic: boolean) => (
-        <Tag color={isPublic ? 'green' : 'orange'} icon={isPublic ? <EyeOutlined /> : <EyeInvisibleOutlined />}>
-          {isPublic ? '公开' : '私有'}
-        </Tag>
+      render: (isPublic: boolean, record: Photo) => (
+        <Space>
+          <Tag color={isPublic ? 'green' : 'orange'} icon={isPublic ? <EyeOutlined /> : <EyeInvisibleOutlined />}>
+            {isPublic ? '公开' : '私有'}
+          </Tag>
+          <Switch
+            size="small"
+            checked={isPublic}
+            onChange={(checked) => handleToggleVisibility(record.id, checked)}
+            checkedChildren={<EyeOutlined />}
+            unCheckedChildren={<EyeInvisibleOutlined />}
+          />
+        </Space>
       ),
     },
     {
@@ -266,9 +278,33 @@ const Admin: React.FC = () => {
     setModalVisible(true);
   };
 
-  const handleDelete = (id: string) => {
-    setPhotos(photos.filter((photo) => photo.id !== id));
-    message.success('Successfully deleted');
+  const handleDelete = async (id: string) => {
+    try {
+      await deletePhoto(id);
+      setPhotos(photos.filter((photo) => photo.id !== id));
+      message.success('照片删除成功');
+      // 重新加载统计数据
+      loadData();
+    } catch (error) {
+      console.error('Delete failed:', error);
+      message.error('删除失败，请稍后重试');
+    }
+  };
+
+  const handleToggleVisibility = async (id: string, isPublic: boolean) => {
+    try {
+      await togglePhotoVisibility(id, isPublic);
+      // 更新本地状态
+      setPhotos(photos.map(photo => 
+        photo.id === id ? { ...photo, isPublic } : photo
+      ));
+      message.success(`照片已${isPublic ? '公开' : '设为私有'}`);
+      // 重新加载统计数据
+      loadData();
+    } catch (error) {
+      console.error('Toggle visibility failed:', error);
+      message.error('状态切换失败，请稍后重试');
+    }
   };
 
   const handlePreview = (photo: Photo) => {
@@ -287,29 +323,75 @@ const Admin: React.FC = () => {
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
-      const photo: Photo = {
-        id: editingPhoto?.id || Date.now().toString(),
-        title: values.title || '未命名照片',
-        description: values.description || '',
-        src: values.src || 'https://picsum.photos/800/600?random=' + Math.random(),
-        thumbnail: values.thumbnail || 'https://picsum.photos/300/200?random=' + Math.random(),
-        date: values.date ? values.date.format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'),
-        size: '2.0 MB',
-        location: values.location || '',
-        isPublic: values.isPublic !== undefined ? values.isPublic : false,
-      };
-
+      
       if (editingPhoto) {
-        setPhotos(photos.map((p) => (p.id === photo.id ? photo : p)));
-        message.success('Successfully updated');
+        // 编辑现有照片
+        const updateData = {
+          title: values.title || editingPhoto.title,
+          description: values.description || editingPhoto.description,
+          date: values.date ? values.date.format('YYYY-MM-DD') : editingPhoto.date,
+          location: values.location || editingPhoto.location,
+          is_public: values.isPublic !== undefined ? values.isPublic : editingPhoto.isPublic,
+        };
+
+        await updatePhoto(editingPhoto.id, updateData);
+        message.success('照片信息更新成功');
       } else {
-        setPhotos([photo, ...photos]);
-        message.success('Successfully added');
+        // 上传新照片
+        if (fileList.length === 0) {
+          message.error('请选择要上传的照片');
+          return;
+        }
+
+        const file = fileList[0];
+        console.log('📁 准备上传文件:', {
+          file,
+          originFileObj: file.originFileObj,
+          name: file.name,
+          size: file.size,
+          type: file.type
+        });
+
+        // 获取实际的文件对象
+        const actualFile = file.originFileObj as File;
+        if (!actualFile || !(actualFile instanceof File)) {
+          message.error('文件对象无效，请重新选择文件');
+          return;
+        }
+
+        console.log('📄 实际文件对象:', {
+          actualFile,
+          name: actualFile.name,
+          type: actualFile.type,
+          size: actualFile.size
+        });
+
+        const formData = new FormData();
+        formData.append('file', actualFile, actualFile.name);
+        formData.append('title', values.title || '未命名照片');
+        formData.append('description', values.description || '');
+        formData.append('date', values.date ? values.date.format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'));
+        formData.append('location', values.location || '');
+        formData.append('is_public', String(values.isPublic !== undefined ? values.isPublic : false));
+
+        // 调试FormData内容
+        console.log('📤 FormData内容:');
+        for (let [key, value] of formData.entries()) {
+          console.log(`  ${key}:`, value);
+        }
+
+        await uploadPhoto(formData);
+        message.success('照片上传成功');
       }
 
+      // 重新加载数据
+      await loadData();
       setModalVisible(false);
+      setFileList([]);
+      form.resetFields();
     } catch (error) {
-      console.error('Validation failed:', error);
+      console.error('Submit failed:', error);
+      message.error(editingPhoto ? '更新失败，请稍后重试' : '上传失败，请稍后重试');
     }
   };
 
@@ -317,32 +399,64 @@ const Admin: React.FC = () => {
     name: 'file',
     multiple: false,
     beforeUpload: (file) => {
+      console.log('📁 beforeUpload 检查文件:', {
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        lastModified: file.lastModified
+      });
+
       const isImage = file.type.startsWith('image/');
       if (!isImage) {
-        message.error('You can only upload image files!');
+        message.error('只能上传图片文件！');
         return false;
       }
-      const isLt2M = file.size / 1024 / 1024 < 2;
-      if (!isLt2M) {
-        message.error('Image must be smaller than 2MB!');
+      const isLt10M = file.size / 1024 / 1024 < 10;
+      if (!isLt10M) {
+        message.error('图片大小不能超过10MB！');
         return false;
       }
-      return false; // Prevent automatic upload
+      
+      console.log('✅ 文件验证通过，添加到文件列表');
+      // 返回false阻止自动上传，但允许文件添加到fileList
+      return false;
     },
     fileList,
     onChange: ({ fileList: newFileList }) => {
+      console.log('📋 fileList 更新:', newFileList);
       setFileList(newFileList);
     },
     onDrop(e) {
-      console.log('Dropped files', e.dataTransfer.files);
+      console.log('🎯 拖拽文件:', e.dataTransfer.files);
+    },
+    onRemove: () => {
+      console.log('🗑️ 移除文件');
+      setFileList([]);
+    },
+    customRequest: ({ file, onSuccess, onError }) => {
+      // 阻止默认上传行为，我们手动处理上传
+      console.log('🚫 阻止默认上传，使用手动上传');
+      // 立即标记为成功，因为我们会在表单提交时手动上传
+      onSuccess?.({}, file);
     },
   };
 
-  const totalPhotos = photos.length;
-  const totalSize = photos.reduce((acc, photo) => {
-    const size = parseFloat(photo.size?.replace(' MB', '') || '0');
-    return acc + size;
-  }, 0);
+  // 统计数据
+  const totalPhotos = stats?.data?.total_photos || photos.length;
+  const publicPhotos = stats?.data?.public_photos || photos.filter(p => p.isPublic).length;
+  const privatePhotos = stats?.data?.private_photos || photos.filter(p => !p.isPublic).length;
+  
+  // 计算总大小
+  let totalSizeNum = 0;
+  if (stats?.data?.total_size) {
+    totalSizeNum = parseFloat(stats.data.total_size.replace(' MB', ''));
+  } else {
+    totalSizeNum = photos.reduce((acc, photo) => {
+      const size = parseFloat(photo.size?.replace(' MB', '') || '0');
+      return acc + size;
+    }, 0);
+  }
+  const totalSize = totalSizeNum.toFixed(1);
 
   return (
     <Layout className="basic-layout">
@@ -379,7 +493,7 @@ const Admin: React.FC = () => {
           <Card>
             <Statistic
               title="Total Storage"
-              value={totalSize.toFixed(1)}
+              value={totalSize}
               suffix="MB"
               prefix={<FileImageOutlined />}
             />
@@ -438,19 +552,21 @@ const Admin: React.FC = () => {
       >
         <Form form={form} layout="vertical" initialValues={{ isPublic: false }}>
           {/* 图片上传区域 - 放在最上方 */}
-          <Form.Item label="Upload Photo" required style={{ marginBottom: 24 }}>
-            <Dragger {...uploadProps} style={{ padding: '40px 20px' }}>
-              <p className="ant-upload-drag-icon">
-                <InboxOutlined style={{ fontSize: '48px', color: '#000' }} />
-              </p>
-              <p className="ant-upload-text" style={{ fontSize: '16px', fontWeight: 500 }}>
-                Click or drag file to this area to upload
-              </p>
-              <p className="ant-upload-hint" style={{ fontSize: '14px', color: '#666' }}>
-                Support for jpg, png formats. File size should not exceed 2MB.
-              </p>
-            </Dragger>
-          </Form.Item>
+          {!editingPhoto && (
+            <Form.Item label="Upload Photo" required style={{ marginBottom: 24 }}>
+              <Dragger {...uploadProps} style={{ padding: '40px 20px' }}>
+                <p className="ant-upload-drag-icon">
+                  <InboxOutlined style={{ fontSize: '48px', color: '#000' }} />
+                </p>
+                <p className="ant-upload-text" style={{ fontSize: '16px', fontWeight: 500 }}>
+                  点击或拖拽文件到此区域上传
+                </p>
+                <p className="ant-upload-hint" style={{ fontSize: '14px', color: '#666' }}>
+                  支持 JPG、PNG 格式，文件大小不超过 10MB
+                </p>
+              </Dragger>
+            </Form.Item>
+          )}
 
           {/* 隐私设置区域 - 紧跟上传区域 */}
           <div style={{ marginBottom: 24 }}>

@@ -19,7 +19,7 @@ export default defineConfig({
   openAPI: {
     requestLibPath: "import { request } from '@umijs/max'",
     // 使用本地的 API 规范文件
-    schemaPath:'http://localhost:9000/api/swagger.json',
+    schemaPath:'http://127.0.0.1:5000/api/swagger.json',
     projectName: 'jiadan-pic-api',
     apiPrefix: '\'/api\'',
     namespace: 'API',
@@ -34,7 +34,7 @@ export default defineConfig({
   // 开发环境代理配置
   proxy: {
     '/api': {
-      target: 'http://localhost:9000',
+      target: 'http://127.0.0.1:5000',
       changeOrigin: true,
       pathRewrite: {
         '^/api': '/api'

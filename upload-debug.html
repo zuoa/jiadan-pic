@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>上传调试</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .form-group { margin: 10px 0; }
+        label { display: block; margin-bottom: 5px; }
+        input, textarea { width: 300px; padding: 5px; }
+        button { padding: 10px 20px; margin: 10px 5px; }
+        .result { margin-top: 20px; padding: 10px; border: 1px solid #ccc; }
+        .error { background-color: #ffe6e6; }
+        .success { background-color: #e6ffe6; }
+    </style>
+</head>
+<body>
+    <h1>上传功能调试</h1>
+    
+    <div class="form-group">
+        <label for="tokenInput">认证Token (从localStorage获取):</label>
+        <input type="text" id="tokenInput" placeholder="将自动从localStorage获取">
+        <button onclick="loadToken()">获取Token</button>
+    </div>
+
+    <div class="form-group">
+        <label for="fileInput">选择图片文件:</label>
+        <input type="file" id="fileInput" accept="image/*">
+    </div>
+
+    <div class="form-group">
+        <label for="titleInput">标题:</label>
+        <input type="text" id="titleInput" value="调试测试照片">
+    </div>
+
+    <div class="form-group">
+        <label for="descInput">描述:</label>
+        <textarea id="descInput">这是一张用于调试的测试照片</textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="locationInput">位置:</label>
+        <input type="text" id="locationInput" value="调试地点">
+    </div>
+
+    <div class="form-group">
+        <label>
+            <input type="checkbox" id="publicInput"> 公开照片
+        </label>
+    </div>
+
+    <button onclick="testUpload()">测试上传</button>
+    <button onclick="clearResult()">清除结果</button>
+
+    <div id="result" class="result" style="display: none;"></div>
+
+    <script>
+        function loadToken() {
+            const token = localStorage.getItem('admin_token');
+            document.getElementById('tokenInput').value = token || '未找到token';
+            console.log('Token:', token);
+        }
+
+        function clearResult() {
+            const result = document.getElementById('result');
+            result.style.display = 'none';
+            result.innerHTML = '';
+        }
+
+        function showResult(content, isError = false) {
+            const result = document.getElementById('result');
+            result.innerHTML = content;
+            result.className = 'result ' + (isError ? 'error' : 'success');
+            result.style.display = 'block';
+        }
+
+        async function testUpload() {
+            try {
+                const fileInput = document.getElementById('fileInput');
+                const file = fileInput.files[0];
+                
+                if (!file) {
+                    showResult('请选择文件', true);
+                    return;
+                }
+
+                const token = document.getElementById('tokenInput').value;
+                if (!token || token === '未找到token') {
+                    showResult('请先获取有效的认证token', true);
+                    return;
+                }
+
+                console.log('📁 准备上传文件:', {
+                    name: file.name,
+                    type: file.type,
+                    size: file.size,
+                    lastModified: file.lastModified
+                });
+
+                const formData = new FormData();
+                formData.append('file', file, file.name);
+                formData.append('title', document.getElementById('titleInput').value);
+                formData.append('description', document.getElementById('descInput').value);
+                formData.append('date', new Date().toISOString().split('T')[0]);
+                formData.append('location', document.getElementById('locationInput').value);
+                formData.append('is_public', document.getElementById('publicInput').checked.toString());
+
+                console.log('📤 FormData内容:');
+                for (let [key, value] of formData.entries()) {
+                    console.log(`  ${key}:`, value);
+                }
+
+                showResult('正在上传...', false);
+
+                const response = await fetch('http://localhost:8000/api/photos/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                        // 注意：不设置Content-Type，让浏览器自动设置
+                    },
+                    body: formData
+                });
+
+                console.log('📨 响应状态:', response.status, response.statusText);
+                console.log('📨 响应头:', Object.fromEntries(response.headers.entries()));
+
+                const result = await response.json();
+                console.log('📨 响应数据:', result);
+
+                if (response.ok) {
+                    showResult(`
+                        <h3>✅ 上传成功!</h3>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    `, false);
+                } else {
+                    showResult(`
+                        <h3>❌ 上传失败 (${response.status})</h3>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    `, true);
+                }
+            } catch (error) {
+                console.error('❌ 上传异常:', error);
+                showResult(`
+                    <h3>❌ 上传异常</h3>
+                    <p>${error.message}</p>
+                    <pre>${error.stack}</pre>
+                `, true);
+            }
+        }
+
+        // 页面加载时自动获取token
+        window.onload = function() {
+            loadToken();
+        };
+    </script>
+</body>
+</html> 

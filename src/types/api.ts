@@ -78,6 +78,24 @@ export interface PhotoUpdate {
   is_public?: boolean;
 }
 
+export interface PhotoCreateRequest {
+  title: string;
+  description?: string;
+  date?: string;
+  location?: string;
+  is_public?: boolean;
+  file_name: string;
+  mime_type: string;
+}
+
+export interface PhotoUpdateRequest {
+  title?: string;
+  description?: string;
+  date?: string;
+  location?: string;
+  is_public?: boolean;
+}
+
 // 查询参数类型
 export interface PhotoListQuery {
   search?: string;
