@@ -438,10 +438,12 @@
     border: none;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
     padding: 0;
+    margin: 0;
   }
   
   .ant-modal-body {
     padding: 0;
+    margin: 0;
   }
   
   .ant-modal-close {
@@ -467,19 +469,54 @@
 }
 
 .preview-content {
+  margin: 0;
+  padding: 0;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  
   .preview-img {
-    width: 100%;
+    max-width: 100%;
+    max-height: 90vh;
+    width: auto;
     height: auto;
-    max-height: 80vh;
     object-fit: contain;
     display: block;
     opacity: 0;
     transform: scale(0.95);
     transition: all 0.4s ease;
+    margin: 0 auto;
+    padding: 0;
     
     &.loaded {
       opacity: 1;
       transform: scale(1);
+    }
+    
+    // 竖屏照片 - 限制最大宽度以减少白边
+    &.preview-img-portrait {
+      width: auto;
+      height: 90vh;
+      max-width: 100%;
+      object-fit: contain;
+      margin: 0 auto;
+    }
+    
+    // 横屏照片 - 占满宽度
+    &.preview-img-landscape {
+      width: 100%;
+      height: auto;
+      max-height: 90vh;
+      object-fit: contain;
+    }
+    
+    // 正方形照片 - 占满宽度
+    &.preview-img-square {
+      width: 100%;
+      height: auto;
+      max-height: 90vh;
+      object-fit: contain;
     }
   }
   
@@ -487,6 +524,8 @@
     padding: var(--space-lg);
     border-top: 1px solid var(--color-border);
     background: var(--color-background);
+    width: 100%;
+    align-self: stretch;
     
     .preview-title {
       font-size: var(--font-size-lg);
@@ -686,7 +725,7 @@
   // Preview Modal Mobile Styles
   .ant-modal.photo-preview-modal-minimal {
     .ant-modal-content {
-      margin: var(--space-md);
+      margin: var(--space-sm);
     }
     
     .ant-modal-close {
@@ -703,7 +742,22 @@
   
   .preview-content {
     .preview-img {
-      max-height: 70vh;
+      max-height: 85vh;
+      
+      &.preview-img-portrait {
+        height: 85vh;
+        max-width: 100%;
+      }
+      
+      &.preview-img-landscape {
+        width: 100%;
+        max-height: 85vh;
+      }
+      
+      &.preview-img-square {
+        width: 100%;
+        max-height: 85vh;
+      }
     }
     
     .preview-info {
@@ -769,7 +823,22 @@
   
   .preview-content {
     .preview-img {
-      max-height: 60vh;
+      max-height: 80vh;
+      
+      &.preview-img-portrait {
+        height: 80vh;
+        max-width: 100%;
+      }
+      
+      &.preview-img-landscape {
+        width: 100%;
+        max-height: 80vh;
+      }
+      
+      &.preview-img-square {
+        width: 100%;
+        max-height: 80vh;
+      }
     }
     
     .preview-info {

@@ -350,6 +350,19 @@ const Gallery: React.FC = () => {
     setPreviewVisible(true);
   };
 
+  // 获取预览图片的样式类名
+  const getPreviewImageClass = (photo: PhotoWithDimensions) => {
+    if (!photo.aspectRatio) return 'preview-img';
+    
+    if (photo.isPortrait) {
+      return 'preview-img preview-img-portrait';
+    } else if (photo.isLandscape) {
+      return 'preview-img preview-img-landscape';
+    } else {
+      return 'preview-img preview-img-square';
+    }
+  };
+
   // 处理权限验证
   const handleAuth = async () => {
     setAuthLoading(true);
@@ -585,8 +598,8 @@ const Gallery: React.FC = () => {
           title={null}
           footer={null}
           onCancel={() => setPreviewVisible(false)}
-          width="90%"
-          style={{ maxWidth: '800px' }}
+          width="95%"
+          style={{ maxWidth: '1200px', top: 20 }}
           centered
           destroyOnClose
           className="photo-preview-modal-minimal"
@@ -597,7 +610,7 @@ const Gallery: React.FC = () => {
               <img
                 alt={previewData.title || 'Photo preview'}
                 src={previewData.src}
-                className="preview-img"
+                className={getPreviewImageClass(previewData)}
                 onLoad={(e) => {
                   e.currentTarget.classList.add('loaded');
                 }}
