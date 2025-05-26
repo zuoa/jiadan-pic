@@ -4,11 +4,13 @@
 // API 唯一标识：
 import * as auth from "./auth";
 import * as dashboard from "./dashboard";
+import * as images from "./images";
 import * as photos from "./photos";
 import * as public from "./public";
 export default {
   auth,
   dashboard,
+  images,
   photos,
   public,
 };

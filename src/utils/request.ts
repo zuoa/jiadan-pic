@@ -55,6 +55,13 @@ export class HttpClient {
   }
 
   /**
+   * 获取查看秘钥
+   */
+  private getViewPassword(): string | null {
+    return localStorage.getItem('gallery-view-password');
+  }
+
+  /**
    * 构建请求头
    */
   private buildHeaders(options: RequestOptions = {}): Headers {
@@ -69,6 +76,12 @@ export class HttpClient {
     const token = this.getAuthToken();
     if (token) {
       headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    // 添加查看秘钥头
+    const viewPassword = this.getViewPassword();
+    if (viewPassword) {
+      headers.set('X-View-Password', viewPassword);
     }
 
     return headers;

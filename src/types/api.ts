@@ -35,6 +35,16 @@ export interface User {
   email: string;
 }
 
+// 验证查看密码相关类型
+export interface VerifyPasswordRequest {
+  password: string;
+}
+
+export interface VerifyPasswordResponse {
+  success: boolean;
+  message?: string;
+}
+
 // 照片相关类型
 export interface Photo {
   id: string;

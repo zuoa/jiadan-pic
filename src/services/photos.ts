@@ -1,7 +1,7 @@
 import { httpClient } from '@/utils/request';
-import { PhotosResponse, PhotoListQuery, Photo, PhotoCreateRequest, PhotoUpdateRequest } from '@/types/api';
+import { PhotosResponse, PhotoListQuery, Photo, PhotoCreateRequest, PhotoUpdateRequest, VerifyPasswordResponse } from '@/types/api';
 
-// 获取照片列表（管理员）
+// 获取照片列表（根据header中的X-View-Password返回对应权限的照片）
 export async function getPhotos(params: PhotoListQuery = {}) {
   return httpClient.get<PhotosResponse>('/photos', {
     per_page: 12,
@@ -10,7 +10,7 @@ export async function getPhotos(params: PhotoListQuery = {}) {
   });
 }
 
-// 获取公开照片列表（不需要认证）
+// 获取公开照片列表（不需要认证，保留兼容性）
 export async function getPublicPhotos(params: PhotoListQuery = {}) {
   return httpClient.get<PhotosResponse>('/public/photos', {
     per_page: 12,
@@ -72,4 +72,9 @@ export async function togglePhotoVisibility(photoId: string, isPublic: boolean) 
     // 如果专用API失败，使用通用的更新API
     return await httpClient.put<Photo>(`/photos/${photoId}`, { is_public: isPublic });
   }
+}
+
+// 验证查看密码
+export async function verifyViewPassword(password: string) {
+  return httpClient.post<VerifyPasswordResponse>('/auth/verify', { password });
 } 

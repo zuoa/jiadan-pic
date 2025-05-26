@@ -1,4 +1,28 @@
 declare namespace API {
+  type ChangePassword = {
+    /** 当前密码 */
+    current_password: string;
+    /** 新密码 */
+    new_password: string;
+    /** 确认新密码 */
+    confirm_password: string;
+  };
+
+  type ChangePasswordResponse = {
+    /** 请求是否成功 */
+    success?: boolean;
+    /** 响应消息 */
+    message?: string;
+  };
+
+  type customApiFunctionParams = {
+    photo_id: string;
+  };
+
+  type customApiFunctionParams = {
+    photo_id: string;
+  };
+
   type customApiFunctionParams = {
     /** 搜索关键词 */
     search?: string;
@@ -159,5 +183,10 @@ declare namespace API {
     username?: string;
     /** 邮箱 */
     email?: string;
+  };
+
+  type ViewKeyVerify = {
+    /** 查看密钥 */
+    password: string;
   };
 }

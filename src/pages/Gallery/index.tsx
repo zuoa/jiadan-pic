@@ -3,8 +3,8 @@ import { Image, Modal, Empty, Typography, Button, Input, message, Spin } from 'a
 import { FullscreenOutlined, SettingOutlined, LockOutlined, UnlockOutlined } from '@ant-design/icons';
 import { Link } from 'umi';
 // 使用修复后的API服务
-import { getPhotos, getPublicPhotos } from '@/services/photos';
-import { Photo } from '@/types/api';
+import { getPhotos, verifyViewPassword } from '@/services/photos';
+import { Photo, VerifyPasswordResponse } from '@/types/api';
 import './index.less';
 import '../../styles/layout.less';
 
@@ -33,7 +33,7 @@ const Gallery: React.FC = () => {
   const [initialized, setInitialized] = useState(false);
   
   // 权限验证相关状态
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [hasViewPassword, setHasViewPassword] = useState(false);
   const [authModalVisible, setAuthModalVisible] = useState(false);
   const [password, setPassword] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
@@ -42,9 +42,6 @@ const Gallery: React.FC = () => {
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadingRef = useRef(false); // 防止重复加载
-
-  // 正确的密码（实际项目中应该放在后端验证）
-  const GALLERY_PASSWORD = 'jiadan2024';
 
   // 加载照片数据
   const loadPhotos = useCallback(async (page: number = 1, reset: boolean = false) => {
@@ -57,9 +54,7 @@ const Gallery: React.FC = () => {
     setError(null);
     
     try {
-      const response = isAuthenticated 
-        ? await getPhotos({ per_page: 12, page })
-        : await getPublicPhotos({ per_page: 12, page });
+      const response = await getPhotos({ per_page: 12, page });
       
       if (response.success && response.data) {
         const newPhotos = response.data.photos || [];
@@ -80,7 +75,7 @@ const Gallery: React.FC = () => {
         setHasMore(newHasMore);
         
         if (newPhotos.length === 0 && page === 1) {
-          message.info(isAuthenticated ? '暂无照片' : '暂无公开照片，请验证查看完整相册');
+          message.info(hasViewPassword ? '暂无照片' : '暂无公开照片，请验证查看完整相册');
         }
       } else {
         setError(response.message || '获取照片失败');
@@ -98,7 +93,7 @@ const Gallery: React.FC = () => {
       loadingRef.current = false;
       setLoading(false);
     }
-  }, [isAuthenticated]);
+  }, [hasViewPassword]);
 
   // 加载更多
   const loadMore = useCallback(() => {
@@ -219,11 +214,11 @@ const Gallery: React.FC = () => {
     return processedPhotos;
   };
 
-  // 初始化时检查本地存储的认证状态
+  // 初始化时检查本地存储的查看秘钥
   useEffect(() => {
-    const savedAuth = localStorage.getItem('gallery-authenticated');
-    if (savedAuth === 'true') {
-      setIsAuthenticated(true);
+    const savedPassword = localStorage.getItem('gallery-view-password');
+    if (savedPassword) {
+      setHasViewPassword(true);
     }
   }, []);
 
@@ -235,12 +230,12 @@ const Gallery: React.FC = () => {
     }
   }, [initialized, loadPhotos]);
 
-  // 当认证状态改变时刷新数据
+  // 当查看权限状态改变时刷新数据
   useEffect(() => {
     if (initialized) { // 确保已经初始化
       refresh();
     }
-  }, [isAuthenticated, refresh, initialized]);
+  }, [hasViewPassword, refresh, initialized]);
 
   // 处理照片数据变化
   useEffect(() => {
@@ -252,19 +247,12 @@ const Gallery: React.FC = () => {
 
       setIsProcessing(true);
       try {
-        // 根据认证状态过滤照片
-        const filteredPhotos = isAuthenticated 
-          ? photos 
-          : photos.filter((photo: Photo) => photo.is_public);
-        
-
-        
-        // 处理照片尺寸信息
-        const newProcessedPhotos = await processPhotosWithDimensions(filteredPhotos);
+        // 直接使用后端返回的照片数据（后端已根据X-View-Password header过滤）
+        const newProcessedPhotos = await processPhotosWithDimensions(photos);
         setProcessedPhotos(newProcessedPhotos);
         
-        if (newProcessedPhotos.length === 0 && filteredPhotos.length === 0) {
-          message.info(isAuthenticated ? '暂无照片' : '暂无公开照片，请验证查看完整相册');
+        if (newProcessedPhotos.length === 0) {
+          message.info(hasViewPassword ? '暂无照片' : '暂无公开照片，请验证查看完整相册');
         }
               } catch (error) {
         message.error('处理照片数据失败');
@@ -274,7 +262,7 @@ const Gallery: React.FC = () => {
     };
 
     processNewPhotos();
-  }, [photos, isAuthenticated]);
+  }, [photos, hasViewPassword]);
 
   // 设置无限滚动观察器
   useEffect(() => {
@@ -367,17 +355,21 @@ const Gallery: React.FC = () => {
   const handleAuth = async () => {
     setAuthLoading(true);
     
-    // 模拟验证延迟
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    if (password === GALLERY_PASSWORD) {
-      setIsAuthenticated(true);
-      localStorage.setItem('gallery-authenticated', 'true');
-      setAuthModalVisible(false);
-      setPassword('');
-      message.success('验证成功！现在可以查看完整相册了');
-    } else {
-      message.error('密码错误，请重试');
+    try {
+      const response: VerifyPasswordResponse = await verifyViewPassword(password);
+      
+      if (response.success) {
+        setHasViewPassword(true);
+        localStorage.setItem('gallery-view-password', password);
+        setAuthModalVisible(false);
+        setPassword('');
+        message.success('验证成功！现在可以查看完整相册了');
+      } else {
+        message.error(response.message || '密码错误，请重试');
+      }
+    } catch (error: any) {
+      console.error('验证失败:', error);
+      message.error(error.message || '验证失败，请重试');
     }
     
     setAuthLoading(false);
@@ -385,8 +377,8 @@ const Gallery: React.FC = () => {
 
   // 退出权限验证
   const handleLogout = () => {
-    setIsAuthenticated(false);
-    localStorage.removeItem('gallery-authenticated');
+    setHasViewPassword(false);
+    localStorage.removeItem('gallery-view-password');
     message.info('已退出完整模式');
   };
 
@@ -427,7 +419,7 @@ const Gallery: React.FC = () => {
 
         {/* 权限控制按钮 */}
         <div className="auth-controls">
-          {isAuthenticated ? (
+          {hasViewPassword ? (
             <div
               className="auth-btn authenticated"
               onClick={handleLogout}
