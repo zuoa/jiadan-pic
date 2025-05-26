@@ -40,8 +40,10 @@ import {
   GlobalOutlined,
   LockOutlined,
   SettingOutlined,
+  KeyOutlined,
 } from '@ant-design/icons';
 import ProtectedRoute from '../../components/ProtectedRoute';
+import ChangePassword from '../../components/ChangePassword';
 import { AdminAuth } from '../../utils/auth';
 import { getPhotos, deletePhoto, updatePhoto, uploadPhoto, togglePhotoVisibility } from '@/services/photos';
 import { getStats } from '@/services/dashboard';
@@ -79,6 +81,7 @@ const Admin: React.FC = () => {
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [changePasswordVisible, setChangePasswordVisible] = useState(false);
 
   // 获取当前用户信息
   const currentUser = AdminAuth.getCurrentUsername() || 'Admin';
@@ -90,6 +93,15 @@ const Admin: React.FC = () => {
       icon: <UserOutlined />,
       label: `欢迎，${currentUser}`,
       disabled: true,
+    },
+    {
+      type: 'divider',
+    },
+    {
+      key: 'changePassword',
+      icon: <KeyOutlined />,
+      label: '修改密码',
+      onClick: () => setChangePasswordVisible(true),
     },
     {
       type: 'divider',
@@ -781,6 +793,20 @@ const Admin: React.FC = () => {
           </Collapse>
         </Form>
       </Modal>
+
+      {/* 修改密码模态框 */}
+      <ChangePassword
+        visible={changePasswordVisible}
+        onCancel={() => setChangePasswordVisible(false)}
+        onSuccess={() => {
+          message.success('密码修改成功，请重新登录');
+          // 延迟一下再退出登录，让用户看到成功消息
+          setTimeout(() => {
+            AdminAuth.logout();
+            window.location.reload();
+          }, 1500);
+        }}
+      />
         </div>
       </Content>
     </Layout>

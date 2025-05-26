@@ -1,5 +1,5 @@
 import { httpClient } from '@/utils/request';
-import { LoginRequest, LoginResponse, User } from '@/types/api';
+import { LoginRequest, LoginResponse, User, ChangePasswordRequest, ChangePasswordResponse } from '@/types/api';
 
 // 登录
 export async function login(credentials: LoginRequest) {
@@ -24,4 +24,9 @@ export async function getCurrentUser() {
 // 刷新token
 export async function refreshToken() {
   return httpClient.post('/auth/refresh');
+}
+
+// 修改密码
+export async function changePassword(data: ChangePasswordRequest) {
+  return httpClient.post<ChangePasswordResponse>('/auth/change-password', data);
 } 

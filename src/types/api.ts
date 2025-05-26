@@ -130,4 +130,16 @@ export interface StatsData {
   private_photos: number;
   total_size: string;
   recent_uploads: Photo[];
+}
+
+// 修改密码相关类型
+export interface ChangePasswordRequest {
+  current_password: string;
+  new_password: string;
+  confirm_password: string;
+}
+
+export interface ChangePasswordResponse {
+  success: boolean;
+  message?: string;
 } 
