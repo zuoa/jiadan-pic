@@ -431,7 +431,7 @@ const Admin: React.FC = () => {
 
         const formData = new FormData();
         formData.append('file', actualFile, actualFile.name);
-        formData.append('title', values.title || '未命名照片');
+        formData.append('title', values.title || '');
         formData.append('description', values.description || '');
         formData.append('date', values.date ? values.date.format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'));
         formData.append('location', values.location || '');
