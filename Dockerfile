@@ -15,30 +15,10 @@ COPY . .
 RUN npm run build
 
 # 生产阶段
-FROM nginx:1.25-alpine
-
-# 安装必要的工具并创建非root用户
-RUN apk add --no-cache \
-    curl \
-    && addgroup -g 1001 -S nginx \
-    && adduser -S -D -H -u 1001 -h /var/cache/nginx -s /sbin/nologin -G nginx -g nginx nginx
-
-# 复制构建产物
+FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html
-
-# 复制nginx配置
-COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
-
-# 设置正确的权限
-RUN chown -R nginx:nginx /usr/share/nginx/html \
-    && chown -R nginx:nginx /var/cache/nginx \
-    && chown -R nginx:nginx /var/log/nginx \
-    && chown -R nginx:nginx /etc/nginx/conf.d \
-    && touch /var/run/nginx.pid \
-    && chown -R nginx:nginx /var/run/nginx.pid
-
-# 切换到非root用户
-USER nginx
+RUN rm /etc/nginx/conf.d/default.conf
+COPY nginx/nginx.conf /etc/nginx/conf.d
 
 # 暴露端口
 EXPOSE 8000
