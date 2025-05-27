@@ -130,37 +130,40 @@ src/
 
 需要配置正确的 API 基础路径和静态资源路径。
 
-## 清理和重构记录
+## Docker 部署
 
-### ✅ 已完成的清理工作
+### 构建和运行
 
-**删除的无关文件：**
-- 文档文件：`OPENAPI_INTEGRATION.md`, `GALLERY_API_INTEGRATION.md`, `backend-api-design.md`, `DEBUG_GUIDE.md`, `PROXY_CONFIG.md`, `API_INTEGRATION.md`, `LOGIN_CREDENTIALS.md`
-- 测试文件：`test-api.html`, `api-spec.example.json`
-- 旧配置：`openapi.config.js`
-- 示例代码：`src/examples/` 目录
-- 调试页面：`src/pages/ApiTest/`, `src/pages/Gallery/debug.tsx`, `src/pages/docs.tsx`
-- 旧API代码：`src/services/generatedApi.ts`, `src/services/api.ts`, `src/generated/` 目录
-- 脚本文件：`scripts/` 目录及其所有内容
+使用 Docker 构建和部署应用：
 
-**配置更新：**
-- ✅ 安装并配置了 `@umijs/max-plugin-openapi`
-- ✅ 更新了 `.umirc.ts` 使用正确的 OpenAPI 配置
-- ✅ 简化了 `package.json` 脚本
-- ✅ 更新了代码文件以移除对已删除 API 的引用
-- ✅ 修复了所有构建错误
+```bash
+# 构建镜像
+docker build -t jiadan-pic .
 
-### 🔄 待完成的工作
+# 运行容器
+docker run -p 8000:8000 jiadan-pic
+```
 
-1. **API 生成**：启动开发服务器后，OpenAPI 插件会根据 `api-spec.json` 自动生成 API 客户端代码
-2. **API 集成**：将生成的 API 代码集成到现有的工具类中（`src/utils/auth.ts`, `src/utils/apiTest.ts`）
-3. **页面更新**：更新 Gallery 和 Admin 页面以使用生成的 API
+### 使用 Docker Compose
 
-### 📝 使用说明
+```bash
+# 启动服务
+docker-compose up -d
 
-1. **启动开发服务器**：`npm run dev`
-2. **查看 OpenAPI 文档**：访问开发服务器后，OpenAPI 插件会提供 Swagger UI 界面
-3. **使用生成的 API**：在 `src/.umi/plugin-openapi/` 目录中查看生成的 API 代码
+# 查看日志
+docker-compose logs -f
+
+# 停止服务
+docker-compose down
+```
+
+### Docker 特性
+
+- 🐳 多阶段构建优化镜像大小
+- 🔒 非root用户运行提高安全性
+- 🏥 内置健康检查
+- 📦 生产级nginx配置
+- 🚀 gzip压缩和静态资源缓存
 
 ## 许可证
 

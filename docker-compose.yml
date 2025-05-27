@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # 前端应用
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - jiadan-network
+
+  # 如果需要后端服务，可以取消注释以下配置
+  # backend:
+  #   image: your-backend-image:latest
+  #   ports:
+  #     - "5000:5000"
+  #   environment:
+  #     - NODE_ENV=production
+  #   restart: unless-stopped
+  #   networks:
+  #     - jiadan-network
+
+networks:
+  jiadan-network:
+    driver: bridge
+
+# 如果需要持久化存储，可以添加volumes配置
+# volumes:
+#   photos_data:
+#   db_data: 
