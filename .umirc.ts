@@ -11,6 +11,7 @@ export default defineConfig({
   title: 'Jiadan Visual Stories',
   hash: true,
   publicPath: process.env.NODE_ENV === 'production' ? './' : '/',
+
   
   // 启用插件
   plugins: ['@umijs/max-plugin-openapi'],
