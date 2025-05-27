@@ -4,7 +4,7 @@ export const ENV_CONFIG = {
     API_BASE_URL: '/api', // 开发环境使用代理
   },
   production: {
-    API_BASE_URL: process.env.REACT_APP_API_URL || 'https://your-api-domain.com/api', // 生产环境API地址
+    API_BASE_URL: process.env.REACT_APP_API_URL || '/api', // 生产环境API地址
   },
   test: {
     API_BASE_URL: '/api',

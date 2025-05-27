@@ -1,14 +1,17 @@
-version: '3.8'
+version: '3'
 
 services:
   # 前端应用
   frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/zuoa/jiadan-pic:main
+    container_name: jiadan-pic-web
+    restart: "always"
+    depends_on:
+      - backend
     ports:
       - "8000:8000"
     environment:
+      - "TZ=Asia/Shanghai"
       - NODE_ENV=production
     restart: unless-stopped
     healthcheck:
@@ -20,22 +23,16 @@ services:
     networks:
       - jiadan-network
 
-  # 如果需要后端服务，可以取消注释以下配置
-  # backend:
-  #   image: your-backend-image:latest
-  #   ports:
-  #     - "5000:5000"
-  #   environment:
-  #     - NODE_ENV=production
-  #   restart: unless-stopped
-  #   networks:
-  #     - jiadan-network
+  backend:
+    image: ghcr.io/zuoa/jiadan-pic-api:main
+    container_name: jiadan-pic-api
+    environment:
+      - NODE_ENV=production
+      - "TZ=Asia/Shanghai"
+    restart: unless-stopped
+    networks:
+      - jiadan-network
 
 networks:
   jiadan-network:
     driver: bridge
-
-# 如果需要持久化存储，可以添加volumes配置
-# volumes:
-#   photos_data:
-#   db_data: 
