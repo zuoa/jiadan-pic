@@ -31,6 +31,9 @@ export default defineConfig({
       },
     },
   },
+  analytics: {
+    baidu: '86967f4a14cb4436076a71081865f2db',
+  },
   
   // 开发环境代理配置
   proxy: {
