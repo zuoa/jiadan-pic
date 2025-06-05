@@ -38,7 +38,7 @@ export default defineConfig({
   // 开发环境代理配置
   proxy: {
     '/api': {
-      target: 'http://127.0.0.1:5000',
+      target: 'https://gallery.jiadan.li/',
       changeOrigin: true,
       pathRewrite: {
         '^/api': '/api'

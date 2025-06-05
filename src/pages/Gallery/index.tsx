@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Image, Modal, Empty, Typography, Button, Input, message, Spin } from 'antd';
 import { FullscreenOutlined, SettingOutlined, LockOutlined, UnlockOutlined } from '@ant-design/icons';
 import { Link } from 'umi';
+import Masonry from 'react-masonry-css';
 // 使用修复后的API服务
 import { getPhotos, verifyViewPassword } from '@/services/photos';
 import { Photo, VerifyPasswordResponse } from '@/types/api';
@@ -42,6 +43,14 @@ const Gallery: React.FC = () => {
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadingRef = useRef(false); // 防止重复加载
+
+  // 定义瀑布流断点
+  const breakpointColumns = {
+    default: 4,
+    1200: 3,
+    768: 2,
+    480: 1
+  };
 
   // 加载照片数据
   const loadPhotos = useCallback(async (page: number = 1, reset: boolean = false) => {
@@ -187,8 +196,14 @@ const Gallery: React.FC = () => {
 
   // 处理照片数据并添加尺寸信息
   const processPhotosWithDimensions = async (photosData: Photo[]): Promise<PhotoWithDimensions[]> => {
-    const processedPhotos = await Promise.all(
-      photosData.map(async (photo) => {
+    // 只处理新加载的照片
+    const newPhotos = photosData.filter(photo => 
+      !processedPhotos.some(existingPhoto => existingPhoto.id === photo.id)
+    );
+
+    // 预先计算所有新照片的尺寸
+    const processedNewPhotos = await Promise.all(
+      newPhotos.map(async (photo) => {
         try {
           const dimensions = await getImageDimensions(photo.thumbnail);
           const aspectRatio = dimensions.width / dimensions.height;
@@ -210,8 +225,15 @@ const Gallery: React.FC = () => {
         }
       })
     );
+
+    // 按照高度对新照片进行排序，确保相似的图片放在一起
+    const sortedNewPhotos = processedNewPhotos.sort((a, b) => {
+      if (!a.aspectRatio || !b.aspectRatio) return 0;
+      return b.aspectRatio - a.aspectRatio;
+    });
     
-    return processedPhotos;
+    // 合并已处理和新处理的照片
+    return [...processedPhotos, ...sortedNewPhotos];
   };
 
   // 初始化时检查本地存储的查看秘钥
@@ -247,14 +269,18 @@ const Gallery: React.FC = () => {
 
       setIsProcessing(true);
       try {
-        // 直接使用后端返回的照片数据（后端已根据X-View-Password header过滤）
+        // 只处理新加载的照片
         const newProcessedPhotos = await processPhotosWithDimensions(photos);
-        setProcessedPhotos(newProcessedPhotos);
+        
+        // 使用 requestAnimationFrame 确保在下一帧更新状态
+        requestAnimationFrame(() => {
+          setProcessedPhotos(newProcessedPhotos);
+        });
         
         if (newProcessedPhotos.length === 0) {
           message.info(hasViewPassword ? '暂无照片' : '暂无公开照片，请验证查看完整相册');
         }
-              } catch (error) {
+      } catch (error) {
         message.error('处理照片数据失败');
       } finally {
         setIsProcessing(false);
@@ -463,7 +489,11 @@ const Gallery: React.FC = () => {
           </div>
         ) : (
           <>
-            <div className="gallery-masonry">
+            <Masonry
+              breakpointCols={breakpointColumns}
+              className="gallery-masonry"
+              columnClassName="gallery-masonry-column"
+            >
               {processedPhotos.map((photo, index) => (
                 <div 
                   key={photo.id} 
@@ -538,7 +568,7 @@ const Gallery: React.FC = () => {
                   </div>
                 </div>
               ))}
-            </div>
+            </Masonry>
 
             {/* 加载更多指示器 - 增大触发区域 */}
             {hasMore && (

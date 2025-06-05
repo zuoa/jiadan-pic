@@ -161,38 +161,21 @@
 
 // Photo Masonry Layout
 .gallery-masonry {
-  columns: 4;
-  column-gap: var(--space-lg);
-  column-fill: balance;
+  display: flex;
+  margin-left: -24px; // 抵消列间距
+  width: auto;
   animation: slideUp var(--transition-slow) ease-out 0.4s both;
-  
-  // 备用Grid布局（当CSS columns不支持时）
-  @supports not (columns: 4) {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: var(--space-lg);
-  }
 }
 
-// 加载更多指示器
-.load-more-trigger {
-  opacity: 0;
-  animation: fadeIn var(--transition-base) ease-out 0.5s forwards;
-  
-  .ant-spin {
-    .ant-spin-dot {
-      .ant-spin-dot-item {
-        background-color: var(--color-primary);
-      }
-    }
-  }
+.gallery-masonry-column {
+  padding-left: 24px; // 列间距
+  background-clip: padding-box;
 }
 
 .photo-card-wrapper {
-  display: inline-block;
+  display: block;
   width: 100%;
   margin-bottom: var(--space-lg);
-  break-inside: avoid;
   animation: fadeIn var(--transition-base) ease-out;
   animation-fill-mode: both;
   
@@ -668,13 +651,8 @@
 // Responsive Design
 @media (max-width: 1200px) {
   .gallery-masonry {
-    columns: 3;
-    column-gap: var(--space-md);
-    
-    @supports not (columns: 3) {
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: var(--space-md);
-    }
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-md);
   }
 }
 
@@ -698,13 +676,8 @@
   }
   
   .gallery-masonry {
-    columns: 2;
-    column-gap: var(--space-md);
-    
-    @supports not (columns: 2) {
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: var(--space-md);
-    }
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-md);
   }
   
   .control-buttons {
@@ -794,13 +767,8 @@
   }
   
   .gallery-masonry {
-    columns: 1;
-    column-gap: 0;
-    
-    @supports not (columns: 1) {
-      grid-template-columns: 1fr;
-      gap: var(--space-md);
-    }
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
   }
   
   // Preview Modal Small Mobile Styles
