@@ -33,6 +33,7 @@ export default defineConfig({
   },
   analytics: {
     baidu: '86967f4a14cb4436076a71081865f2db',
+    ga_v2: 'G-NRM4MMP1ET'
   },
   
   // 开发环境代理配置
